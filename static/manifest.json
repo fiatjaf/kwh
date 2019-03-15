@@ -1,0 +1,50 @@
+{
+  "id": "kwh",
+  "applications": {
+    "gecko": {
+      "id": "kwh@alhur.es",
+      "strict_min_version": "57.0"
+    }
+  },
+  "manifest_version": 2,
+  "name": "KwH",
+  "description": "Make lightning payments in the browser with c-lightning",
+  "version": "0.0.1",
+  "author": "fiatjaf",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "64": "icon64.png",
+    "128": "icon128.png"
+  },
+  "content_scripts": [{
+    "matches": [
+      "file://*/*",
+      "http://*/*",
+      "https://*/*"
+    ],
+    "js": ["content_script.js"],
+    "run_at": "document_start",
+"all_frames": true
+  }],
+  "background": {
+    "scripts": [
+      "background_script.js"
+    ],
+    "persistent": false
+  },
+  "web_accessible_resources": [
+    "inpage_script.js"
+  ],
+  "permissions": [
+    "storage",
+    "clipboardWrite",
+    "activeTab",
+    "contextMenus"
+  ],
+  "optional_permissions": [
+    "notifications",
+    "http://*/",
+    "https://*/"
+  ]
+}

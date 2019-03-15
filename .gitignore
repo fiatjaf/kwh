@@ -1,0 +1,8 @@
+node_modules
+*.swo
+*.swp
+static/icon*
+static/*.js
+static/*.css
+browserify-cache.json
+*.zip
