@@ -1,30 +1,36 @@
 all: build
 
 icons: static/icon64.png static/icon128.png static/icon48.png static/icon16.png
+build: icons static/inpage-bundle.js static/content-bundle.js static/background-bundle.js static/popup-bundle.js static/style.css
 
 static/icon%.png: icon.png
 	convert icon.png -resize $*x$* $@
 
-static/background_script.js: background.js
+static/background-bundle.js: src/background.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
-static/inpage_script.js: inpage.js
+static/content-bundle.js: src/content.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
-static/style.css: style.styl
-	./node_modules/.bin/stylus < style.styl > static/style.css
+static/inpage-bundle.js: src/inpage.js
+	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
-build: icons static/inpage_script.js static/background_script.js static/style.css
+static/popup-bundle.js: src/popup.js
+	./node_modules/.bin/browserifyinc $< -dv --outfile $@
+
+static/style.css: src/style.styl
+	./node_modules/.bin/stylus < $< > $@
 
 pack.zip: build
 	cd static/ && \
         zip -r pack * && \
         mv pack.zip ../
 
-sources.zip: $(shell find icon.png *.html *.js)
+sources.zip: build
 	rm -fr tmpsrc/
 	mkdir -p tmpsrc
-	cp -r icon.png *.html *.js tmpsrc/
+	cd static && \
+        cp -r icon.png *.html *.js tmpsrc/
 	cd tmpsrc/ && \
         zip -r sources * && \
         mv sources.zip ../
