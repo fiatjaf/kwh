@@ -2,7 +2,8 @@
 
 import browser from 'webextension-polyfill'
 
-import {PROMPT_PAYMENT, getOriginData} from './open-prompt'
+import {PROMPT_PAYMENT} from './constants'
+import {getOriginData} from './open-prompt'
 
 // intercept any `lightning:` requests
 if (document) {

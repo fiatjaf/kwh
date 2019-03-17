@@ -17,16 +17,25 @@
     "64": "icon64.png",
     "128": "icon128.png"
   },
-  "content_scripts": [{
-    "matches": [
-      "file://*/*",
-      "http://*/*",
-      "https://*/*"
-    ],
-    "js": ["content-bundle.js"],
-    "run_at": "document_start",
-"all_frames": true
-  }],
+  "options_ui": {
+    "page": "options.html",
+    "browser_style": true,
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "file://*/*",
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content-bundle.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
   "background": {
     "scripts": [
       "background-bundle.js"

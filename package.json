@@ -23,8 +23,11 @@
     "stylus": "^0.54.5"
   },
   "dependencies": {
+    "create-hmac": "^1.1.7",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
+    "react-qr-svg": "^2.2.1",
+    "use-debounce": "^1.1.1",
     "webextension-polyfill": "^0.4.0"
   }
 }

@@ -2,13 +2,13 @@
 
 import browser from 'webextension-polyfill'
 
-export const PROMPT_PAYMENT = 'pay'
+import {NOTHING} from './constants'
 
 export function getOriginData() {
   return {}
 }
 
-var action = null
+var action = {type: NOTHING}
 
 export default function openPrompt({type, args, origin}) {
   action = {type, args, origin}
