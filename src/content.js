@@ -2,11 +2,13 @@
 
 import browser from 'webextension-polyfill'
 
-import {PROMPT_PAYMENT} from './constants'
-import {getOriginData} from './open-prompt'
+const Keysim = require('keysim')
 
-// intercept any `lightning:` requests
+import {PROMPT_PAYMENT} from './constants'
+import {getOriginData} from './utils'
+
 if (document) {
+  // intercept any `lightning:` links
   document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('click', ev => {
       let target = ev.target
@@ -19,17 +21,18 @@ if (document) {
         let href = lightningLink.getAttribute('href')
         let invoice = href.replace('lightning:', '')
         browser.runtime.sendMessage({
-          prompt: true,
-          type: PROMPT_PAYMENT,
-          origin: getOriginData(),
-          args: {invoice}
+          setAction: {
+            type: PROMPT_PAYMENT,
+            origin: getOriginData(),
+            invoice
+          }
         })
         ev.preventDefault()
       }
     })
   })
 
-  // Listen for right-click events to show the context menu item
+  // listen for right-click events to show the context menu item
   // when a potential lightning invoice is selected
   document.addEventListener(
     'mousedown',
@@ -47,11 +50,26 @@ if (document) {
           // based on the content of the right-clicked text
           browser.runtime.sendMessage({
             contextMenu: true,
-            args: {invoice}
+            invoice
           })
         }
       }
     },
     true
   )
+
+  // paste invoices on specific input fields
+  browser.runtime.onMessage.addListener(({paste, elementId, bolt11}) => {
+    if (!paste) return
+
+    let el = elementId
+      ? browser.contextMenu.getTargetElement(elementId)
+      : document.activeElement
+
+    el.focus()
+
+    let keyboard = Keysim.Keyboard.US_ENGLISH
+    el.value = bolt11
+    keyboard.dispatchEventsForInput(bolt11, el)
+  })
 }

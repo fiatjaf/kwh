@@ -57,11 +57,7 @@
     "storage",
     "clipboardWrite",
     "activeTab",
-    "contextMenus"
-  ],
-  "optional_permissions": [
     "notifications",
-    "http://*/",
-    "https://*/"
+    "contextMenus"
   ]
 }

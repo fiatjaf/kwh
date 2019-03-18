@@ -1,24 +1,27 @@
 all: build
 
-icons: static/icon64.png static/icon128.png static/icon48.png static/icon16.png
+icons: static/icon64.png static/icon128.png static/icon48.png static/icon16.png static/icon64-active.png static/icon128-active.png static/icon48-active.png static/icon16-active.png
 build: icons static/inpage-bundle.js static/content-bundle.js static/background-bundle.js static/popup-bundle.js static/options-bundle.js static/style.css
 
 static/icon%.png: icon.png
-	convert icon.png -resize $*x$* $@
+	convert $< -resize $*x$* $@
 
-static/background-bundle.js: src/background.js
+static/icon%-active.png: icon-active.png
+	convert $< -resize $*x$* $@
+
+static/background-bundle.js: src/background.js src/predefined-behaviors.js src/utils.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
-static/content-bundle.js: src/content.js
+static/content-bundle.js: src/content.js src/utils.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
-static/inpage-bundle.js: src/inpage.js
+static/inpage-bundle.js: src/inpage.js src/utils.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
 static/popup-bundle.js: src/popup.js $(shell find src/components/)
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
-static/options-bundle.js: src/options.js
+static/options-bundle.js: src/options.js src/utils.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
 static/style.css: src/style.styl

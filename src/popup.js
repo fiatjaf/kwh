@@ -4,29 +4,116 @@ import browser from 'webextension-polyfill'
 import React, {useState, useEffect} from 'react' // eslint-disable-line
 import {render} from 'react-dom'
 
-import {NOTHING, PROMPT_PAYMENT} from './constants'
-import Nothing from './components/Nothing'
+import {
+  BLANK,
+  HOME,
+  PROMPT_PAYMENT,
+  MAKE_INVOICE,
+  PROMPT_INVOICE,
+  MAKE_PAYMENT
+} from './constants'
+import Home from './components/Home'
 import Payment from './components/Payment'
+import Invoice from './components/Invoice'
 
 function App() {
-  let [currentAction, setAction] = useState({type: NOTHING})
+  let [currentAction, setAction] = useState({type: BLANK})
 
   useEffect(() => {
+    // when this page is rendered, query the current action
     browser.runtime
       .sendMessage({getPopupAction: true})
       .then(({popupAction}) => {
         setAction(popupAction)
       })
+
+    // if this page is already opened when a new action is set, react to it
+    browser.runtime.onMessage.addListener(newActionListener)
+    return () => browser.runtime.onMessage.removeListener(newActionListener)
+    function newActionListener(message) {
+      if (message.setAction) {
+        setAction(message.setAction)
+      }
+    }
   }, [])
 
+  function navigate(e) {
+    e.preventDefault()
+    navigateTo(e.target.dataset.action)
+  }
+
+  function navigateTo(type) {
+    let action = {type}
+    setAction(action)
+    browser.runtime.sendMessage({setAction: action})
+  }
+
+  var selectedMenu
   var page = <div />
   switch (currentAction.type) {
-    case NOTHING:
-      return <Nothing />
+    case BLANK:
+      page = <div />
+      break
+    case HOME:
+      selectedMenu = HOME
+      page = <Home />
+      break
+    case MAKE_PAYMENT:
     case PROMPT_PAYMENT:
-      return <Payment invoice={currentAction.args.invoice} />
+      selectedMenu = MAKE_PAYMENT
+      page = <Payment invoice={currentAction.invoice} />
+      break
+    case MAKE_INVOICE:
+    case PROMPT_INVOICE:
+      selectedMenu = MAKE_INVOICE
+      page = (
+        <Invoice
+          invoice={currentAction.invoice}
+          pasteOn={currentAction.pasteOn}
+        />
+      )
+      break
   }
-  return page
+
+  let navItemClasses = 'link dim f6 dib pointer ma2 pa2'
+  let activeNavItemClasses = ' b white bg-gold'
+
+  return (
+    <main className="bg-washed-green pa4 black-70">
+      <nav className="pa1 flex justify-between">
+        <a
+          className={
+            navItemClasses + (selectedMenu === HOME ? activeNavItemClasses : '')
+          }
+          data-action={HOME}
+          onClick={navigate}
+        >
+          Home
+        </a>
+        <a
+          className={
+            navItemClasses +
+            (selectedMenu === MAKE_INVOICE ? activeNavItemClasses : '')
+          }
+          data-action={MAKE_INVOICE}
+          onClick={navigate}
+        >
+          Invoice
+        </a>
+        <a
+          className={
+            navItemClasses +
+            (selectedMenu === MAKE_PAYMENT ? activeNavItemClasses : '')
+          }
+          data-action={MAKE_PAYMENT}
+          onClick={navigate}
+        >
+          Pay
+        </a>
+      </nav>
+      <div className="w5">{page}</div>
+    </main>
+  )
 }
 
 render(<App />, document.getElementById('root'))

@@ -13,7 +13,7 @@ const defaultOptions = {
 
 function App() {
   let [currentOptions, setOptions] = useState(defaultOptions)
-  let [options] = useDebounce(currentOptions)
+  let [options] = useDebounce(currentOptions, 1500)
 
   useEffect(() => {
     browser.storage.local.get(defaultOptions).then(setOptions)
