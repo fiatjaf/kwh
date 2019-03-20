@@ -6,7 +6,7 @@ import {render} from 'react-dom'
 import {useDebounce} from 'use-debounce'
 
 const defaultOptions = {
-  endpoint: '',
+  endpoint: 'http://localhost:9737/rpc',
   username: '',
   password: ''
 }
@@ -14,6 +14,7 @@ const defaultOptions = {
 function App() {
   let [currentOptions, setOptions] = useState(defaultOptions)
   let [options] = useDebounce(currentOptions, 1500)
+  let [saved, setSaved] = useState(false)
 
   useEffect(() => {
     browser.storage.local.get(defaultOptions).then(setOptions)
@@ -21,49 +22,51 @@ function App() {
 
   useEffect(
     () => {
-      browser.storage.local.set(options)
+      var proceed = false
+      for (let k in defaultOptions) {
+        if (options[k] !== defaultOptions[k]) {
+          proceed = true
+          break
+        }
+      }
+      if (!proceed) return
+
+      browser.storage.local.set(options).then(() => {
+        setSaved(true)
+        setTimeout(() => {
+          setSaved(false)
+        }, 2500)
+      })
     },
     [options]
   )
 
   function handleChange(e) {
     let k = e.target.name
-    let v = e.target.value
+    let v = e.target.value.trim()
     setOptions({...options, [k]: v})
   }
 
   return (
-    <div>
-      <div>
-        <label>
-          Spark URL:{' '}
-          <input
-            value={currentOptions.endpoint}
-            name="endpoint"
-            onChange={handleChange}
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Username:{' '}
-          <input
-            value={currentOptions.username}
-            name="username"
-            onChange={handleChange}
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Password:{' '}
-          <input
-            value={currentOptions.password}
-            name="password"
-            onChange={handleChange}
-          />
-        </label>
-      </div>
+    <div className="flex flex-column ma2 lh-copy f5 sans-serif black-70">
+      {[
+        ['Spark URL', 'endpoint'],
+        ['Spark username', 'username'],
+        ['Spark password', 'password']
+      ].map(([label, attr]) => (
+        <div className="ma1 pa1">
+          <label className="flex align-center items-center justify-between">
+            <span className="w4 pa1 tr">{label}: </span>
+            <input
+              className="pa1 flex-auto black-70"
+              value={currentOptions[attr]}
+              name={attr}
+              onChange={handleChange}
+            />
+          </label>
+        </div>
+      ))}
+      <div className={'pa2 di tr hide ' + (saved ? 'show' : '')}>saved!</div>
     </div>
   )
 }
