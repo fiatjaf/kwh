@@ -59,9 +59,9 @@ class WebLNProvider {
     return Promise.reject("Can't verify message.")
   }
 
-  _prompt(type) {
+  _prompt(type, params) {
     if (this._promptActive) return Promise.reject('A prompt is already active.')
-    return this._sendMessage({type, prompt: true})
+    return this._sendMessage({type, ...params})
   }
 
   _sendMessage(message) {
@@ -69,7 +69,7 @@ class WebLNProvider {
       window.postMessage({...message, application: 'KwH'}, '*')
 
       function handleWindowMessage(ev) {
-        if (!ev.data || ev.data.application !== 'KwH' || ev.data.prompt) return
+        if (!ev.data || ev.data.application !== 'KwH') return
 
         if (ev.data.error) {
           reject(ev.data.error)

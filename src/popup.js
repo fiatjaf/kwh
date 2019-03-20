@@ -77,6 +77,11 @@ function App() {
         <Invoice
           invoice={currentAction.invoice}
           pasteOn={currentAction.pasteOn}
+          amount={currentAction.amount}
+          defaultAmount={currentAction.defaultAmount}
+          minimumAmount={currentAction.minimumAmount}
+          maximumAmount={currentAction.maximumAmount}
+          defaultMemo={currentAction.defaultMemo}
         />
       )
       break

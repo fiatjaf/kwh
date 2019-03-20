@@ -68,7 +68,7 @@ const behaviors = {
       .get('authorized')
       .then(({authorized}) => {
         return browser.storage.local.set({
-          authorized: {...authorized, domain: true}
+          authorized: {...authorized, [domain]: true}
         })
       })
       .then(() => {

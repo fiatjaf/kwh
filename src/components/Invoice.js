@@ -7,10 +7,20 @@ import cuid from 'cuid'
 
 import ShowInvoice from './ShowInvoice'
 
-export default function Invoice({invoice, pasteOn}) {
+export default function Invoice({
+  invoice,
+  pasteOn,
+  amount,
+  defaultAmount,
+  minimumAmount,
+  maximumAmount,
+  defaultMemo
+}) {
   let [bolt11, setBolt11] = useState(invoice)
-  let [satoshis, setSatoshis] = useState(100)
-  let [desc, setDesc] = useState('Generated on KwH')
+  let [satoshis, setSatoshis] = useState(amount || defaultAmount || 100)
+  let [desc, setDesc] = useState(defaultMemo || 'Generated on KwH')
+
+  let amountFixed = !!amount
 
   function makeInvoice(e) {
     e.preventDefault()
@@ -44,15 +54,19 @@ export default function Invoice({invoice, pasteOn}) {
         <form onSubmit={makeInvoice}>
           <div className="ln-copy">
             Generating an invoice of
-            <AutosizeInput
-              type="number"
-              className={inputClasses}
-              value={satoshis}
-              onChange={e => setSatoshis(e.target.value)}
-              step="1"
-              min="1"
-              max={Infinity}
-            />
+            {amountFixed ? (
+              <span className={inputClasses}>{amount}</span>
+            ) : (
+              <AutosizeInput
+                type="number"
+                className={inputClasses}
+                value={satoshis}
+                onChange={e => setSatoshis(e.target.value)}
+                step="1"
+                min={minimumAmount || 1}
+                max={maximumAmount || Infinity}
+              />
+            )}
             satoshis described as{' '}
             <AutosizeInput
               className={inputClasses}
