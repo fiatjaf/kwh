@@ -34,7 +34,8 @@ export default function Invoice({
           success: [
             'paste-invoice',
             'return-invoice',
-            'cleanup-browser-action'
+            'cleanup-browser-action',
+            'save-invoice-to-current-action'
           ],
           failure: ['notify-invoice-error', 'cleanup-browser-action']
         }

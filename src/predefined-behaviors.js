@@ -11,7 +11,7 @@ const behaviors = {
     setCurrentAction({type: HOME})
   },
   'return-preimage': ({payment_preimage}, [_, promise]) => {
-    promise.resolve({preimage: payment_preimage})
+    if (promise) promise.resolve({preimage: payment_preimage})
   },
   'notify-payment-success': ({msatoshi, msatoshi_sent}, _) => {
     browser.notifications.create({
@@ -25,7 +25,7 @@ const behaviors = {
   },
   'return-payment-error': (resp, [_, promise]) => {
     console.log(resp)
-    promise.reject(new Error('Payment failed or still pending.'))
+    if (promise) promise.reject(new Error('Payment failed or still pending.'))
   },
   'notify-payment-error': (e, _) => {
     browser.notifications.create({
@@ -44,8 +44,11 @@ const behaviors = {
       })
     }
   },
+  'save-invoice-to-current-action': ({bolt11}, [action, _]) => {
+    setCurrentAction({...action, invoice: bolt11})
+  },
   'return-invoice': ({bolt11}, [_, promise]) => {
-    promise.resolve({paymentRequest: bolt11})
+    if (promise) promise.resolve({paymentRequest: bolt11})
   },
   'notify-invoice-error': (e, _) => {
     browser.notifications.create({
@@ -55,20 +58,12 @@ const behaviors = {
       iconUrl: '/icon64.png'
     })
   },
-  'allow-enable-domain': (
-    __,
-    [
-      {
-        origin: {domain}
-      },
-      promise
-    ]
-  ) => {
+  'allow-enable-domain': (__, [action, promise]) => {
     browser.storage.local
       .get('authorized')
       .then(({authorized}) => {
         return browser.storage.local.set({
-          authorized: {...authorized, [domain]: true}
+          authorized: {...authorized, [action.origin.domain]: true}
         })
       })
       .then(() => {

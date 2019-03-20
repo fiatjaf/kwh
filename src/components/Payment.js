@@ -56,6 +56,10 @@ export default function Payment({invoice, origin}) {
       })
       .then(() => {
         setPaymentPending(false)
+        window.close()
+      })
+      .catch(() => {
+        window.close()
       })
 
     setPaymentPending(true)
@@ -96,6 +100,12 @@ export default function Payment({invoice, origin}) {
 
   return (
     <div className="w-100">
+      <div className="flex justify-center pa2">
+        <span className="ma1 f4">
+          Sending a payment on <span className="b">{origin.name}</span>
+        </span>
+        <img src={origin.icon || ''} className="ma1 w-25 h-25" />
+      </div>
       {invoiceData && (
         <div className="lh-copy">
           Pay{' '}

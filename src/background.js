@@ -99,7 +99,7 @@ browser.runtime.onMessage.addListener(({getAuthorized, domain}) => {
   if (!getAuthorized) return
   return browser.storage.local
     .get('authorized')
-    .then(authorized => authorized[domain])
+    .then(({authorized}) => authorized[domain])
 })
 
 // context menus
