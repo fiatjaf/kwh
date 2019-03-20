@@ -59,7 +59,6 @@
     "activeTab",
     "notifications",
     "contextMenus",
-    "https://",
-    "http://"
+    "<all_urls>"
   ]
 }

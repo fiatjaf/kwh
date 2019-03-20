@@ -51,7 +51,7 @@ export function setCurrentAction(action, sendMessage = true, promise = null) {
   }
 
   if (sendMessage) {
-    browser.runtime.sendMessage({setAction: action})
+    browser.runtime.sendMessage({setAction: action}).catch(() => {})
   }
 
   if (
@@ -97,14 +97,12 @@ browser.runtime.onMessage.addListener(({triggerBehaviors, behaviors}) => {
 // return if a domain is authorized or authorize a domain
 browser.runtime.onMessage.addListener(({getAuthorized, domain}) => {
   if (!getAuthorized) return
-  return browser.storage.local
-    .get('authorized')
-    .then(
-      ({authorized}) =>
-        domain
-          ? authorized[domain]
-          : authorized /* return all if domain not given */
-    )
+  return browser.storage.local.get('authorized').then(res => {
+    let authorized = res.authorized || {}
+    return domain
+      ? authorized[domain]
+      : authorized /* return all if domain not given */
+  })
 })
 
 // context menus

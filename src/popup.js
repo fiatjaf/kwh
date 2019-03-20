@@ -88,8 +88,8 @@ function App() {
       break
   }
 
-  let navItemClasses = 'link dim f6 dib pointer ma2 pa2'
-  let activeNavItemClasses = ' b white bg-gold'
+  let navItemClasses = 'link dim f6 dib pointer ma2 pa2 bg-animate'
+  let activeNavItemClasses = ' b green bg-light-yellow'
 
   return (
     <main className="bg-washed-green pa4 black-70">

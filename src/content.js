@@ -79,6 +79,7 @@ if (document) {
   ;(document.head || document.documentElement).appendChild(script)
 
   // communicate with webln
+  var enabled = null
   window.addEventListener('message', ev => {
     // only accept messages from the current window
     if (ev.source !== window) return
@@ -100,30 +101,45 @@ if (document) {
       return Promise.resolve()
         .then(() => {
           if (type === PROMPT_ENABLE) {
+            if (enabled !== null) {
+              return enabled
+            }
+
             // if already authorized just return it
-            return browser.runtime.sendMessage({
-              getAuthorized: true,
-              domain: origin.domain
-            })
+            return browser.runtime
+              .sendMessage({
+                getAuthorized: true,
+                domain: origin.domain
+              })
+              .then(v => {
+                enabled = v
+                return v
+              })
           } else {
             return null
           }
         })
-        .then(response => {
-          if (response !== null) {
+        .then(earlyResponse => {
+          if (earlyResponse !== null && earlyResponse !== undefined) {
             // we have a response already. end here.
-            return response
+            return earlyResponse
+          } else {
+            // proceed to call the background page
+            // and prompt the user if necessary
+            return browser.runtime.sendMessage({setAction: action})
           }
-
-          // proceed to call the background page and prompt the user if necessary
-          browser.runtime
-            .sendMessage({setAction: action})
-            .then(response => {
-              window.postMessage({response: true, data: response}, '*')
-            })
-            .catch(err => {
-              window.postMessage({response: true, error: err}, '*')
-            })
+        })
+        .then(response => {
+          window.postMessage(
+            {response: true, application: 'KwH', data: response},
+            '*'
+          )
+        })
+        .catch(err => {
+          window.postMessage(
+            {response: true, application: 'KwH', error: err},
+            '*'
+          )
         })
     }
   })

@@ -16,8 +16,10 @@ export default function Invoice({
   maximumAmount,
   defaultMemo
 }) {
+  defaultAmount = defaultAmount || maximumAmount || minimumAmount || 100
+
   let [bolt11, setBolt11] = useState(invoice)
-  let [satoshis, setSatoshis] = useState(amount || defaultAmount || 100)
+  let [satoshis, setSatoshis] = useState(amount || defaultAmount)
   let [desc, setDesc] = useState(defaultMemo || 'Generated on KwH')
 
   let amountFixed = !!amount
