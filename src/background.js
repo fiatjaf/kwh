@@ -18,9 +18,9 @@ import {
 import {getBehavior} from './predefined-behaviors'
 
 // return the current action to anyone asking for it -- normally the popup
-browser.runtime.onMessage.addListener(({getPopupAction}) => {
-  if (!getPopupAction) return
-  return Promise.resolve({popupAction: currentAction[0]})
+browser.runtime.onMessage.addListener(({getCurrentAction}) => {
+  if (!getCurrentAction) return
+  return Promise.resolve({action: currentAction[0]})
 })
 
 // set current action when anyone -- normally the popup -- wants
@@ -35,7 +35,7 @@ browser.runtime.onMessage.addListener(({setAction}) => {
 
 const blankAction = {type: HOME}
 var actionIdNext = 1
-var currentAction = [{blankAction, id: 0}, null]
+var currentAction = [{...blankAction, id: 0}, null]
 export function setCurrentAction(action, sendMessage = true, promise = null) {
   currentAction = [{...action, id: actionIdNext++}, promise]
 
@@ -99,7 +99,12 @@ browser.runtime.onMessage.addListener(({getAuthorized, domain}) => {
   if (!getAuthorized) return
   return browser.storage.local
     .get('authorized')
-    .then(({authorized}) => authorized[domain])
+    .then(
+      ({authorized}) =>
+        domain
+          ? authorized[domain]
+          : authorized /* return all if domain not given */
+    )
 })
 
 // context menus

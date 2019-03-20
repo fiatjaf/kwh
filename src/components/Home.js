@@ -11,6 +11,7 @@ export default function Home() {
   let [payments, setPayments] = useState([])
   let [nodeInfo, setNodeInfo] = useState({})
   let [balance, setBalance] = useState(0)
+  let [authorized, setAuthorized] = useState({})
 
   useEffect(() => {
     browser.runtime
@@ -38,6 +39,7 @@ export default function Home() {
       .then(resp => {
         setPayments(resp.payments.filter(pay => pay.status === 'complete'))
       })
+    browser.runtime.sendMessage({getAuthorized: true}).then(setAuthorized)
   }, [])
 
   let transactions = invoices
@@ -46,47 +48,60 @@ export default function Home() {
       amount: msatoshi,
       description
     }))
+    .slice(-15)
     .concat(
-      payments.map(({created_at, msatoshi, description = ''}) => ({
-        date: created_at,
-        amount: -msatoshi,
-        description
-      }))
+      payments
+        .map(({created_at, msatoshi, description = ''}) => ({
+          date: created_at,
+          amount: -msatoshi,
+          description
+        }))
+        .slice(-15)
     )
+    .sort((a, b) => a.date - b.date)
+    .slice(-15)
+    .reverse()
+
+  function deauthorize(e) {
+    e.preventDefault()
+    let domain = e.target.dataset.domain
+    browser.storage.local.get('authorized').then(({authorized}) => {
+      delete authorized[domain]
+      return browser.storage.local.set({authorized}).then(() => {
+        setAuthorized(authorized)
+      })
+    })
+  }
 
   return (
     <div>
-      <h1 className="f6 ma2">Balance</h1>
+      <h1 className="f6 ma3">Balance</h1>
       <div className="f5 tc dark-pink b">{balance} satoshis</div>
-      <h1 className="f6 ma2">Latest transactions</h1>
+      <h1 className="f6 ma3">Latest transactions</h1>
       <div className="flex justify-center">
         <table>
           <tbody>
-            {transactions
-              .slice(-25)
-              .reverse()
-              .map((tx, i) => (
-                <tr key={i} className="bg-light-yellow hover-bg-light-pink">
-                  <td className="b pa2 f7">{formatDate(tx.date)}</td>
-                  <td
-                    className={
-                      'code tr pa2 f6 ' +
-                      (tx.amount < 0 ? 'dark-pink' : 'green')
-                    }
-                  >
-                    {msatsFormat(tx.amount)}
-                  </td>
-                  <td className="pa2 f7">
-                    {tx.description.length > 17
-                      ? tx.description.slice(0, 16) + '…'
-                      : tx.description}
-                  </td>
-                </tr>
-              ))}
+            {transactions.map((tx, i) => (
+              <tr key={i} className="bg-light-yellow hover-bg-light-pink">
+                <td className="b pa2 f7">{formatDate(tx.date)}</td>
+                <td
+                  className={
+                    'code tr pa2 f6 ' + (tx.amount < 0 ? 'dark-pink' : 'green')
+                  }
+                >
+                  {msatsFormat(tx.amount)}
+                </td>
+                <td className="pa2 f7">
+                  {tx.description.length > 17
+                    ? tx.description.slice(0, 16) + '…'
+                    : tx.description}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-      <h1 className="f6 ma2">Node</h1>
+      <h1 className="f6 ma3">Node</h1>
       <div>
         <table>
           <tbody>
@@ -96,6 +111,29 @@ export default function Home() {
                 <td className="wrap code lh-copy">{nodeInfo[attr]}</td>
               </tr>
             ))}
+          </tbody>
+        </table>
+      </div>
+      <h1 className="f6 ma3">Enabled domains</h1>
+      <div>
+        <table>
+          <tbody>
+            {Object.keys(authorized)
+              .map(domain => [domain, authorized[domain]])
+              .map(([domain, _]) => (
+                <tr key={domain}>
+                  <td className="lh-title b tr dark-pink">{domain}</td>
+                  <td>
+                    <button
+                      className="di bg-animate bg-light-gray bn button-reset f7 hover-bg-dark-gray pa1 pointer gray hover-white"
+                      onClick={deauthorize}
+                      data-domain={domain}
+                    >
+                      disable
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

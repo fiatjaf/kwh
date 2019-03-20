@@ -23,11 +23,9 @@ function App() {
 
   useEffect(() => {
     // when this page is rendered, query the current action
-    browser.runtime
-      .sendMessage({getPopupAction: true})
-      .then(({popupAction}) => {
-        setAction(popupAction)
-      })
+    browser.runtime.sendMessage({getCurrentAction: true}).then(({action}) => {
+      setAction(action)
+    })
 
     // if this page is already opened when a new action is set, react to it
     browser.runtime.onMessage.addListener(newActionListener)
