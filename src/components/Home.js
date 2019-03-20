@@ -4,6 +4,8 @@ import browser from 'webextension-polyfill'
 import React, {useState, useEffect} from 'react' // eslint-disable-line
 import friendlyTime from 'friendly-time'
 
+import {msatsFormat} from '../utils'
+
 export default function Home() {
   let [invoices, setInvoices] = useState([])
   let [payments, setPayments] = useState([])
@@ -72,13 +74,7 @@ export default function Home() {
                       (tx.amount < 0 ? 'dark-pink' : 'green')
                     }
                   >
-                    {Math.abs(tx.amount) < 1000
-                      ? `${tx.amount} msats`
-                      : tx.amount === 1000
-                        ? '1 sat'
-                        : tx.amount / 1000 === parseInt(tx.amount / 1000)
-                          ? `${parseInt(tx.amount / 1000)} sats`
-                          : `${(tx.amount / 1000).toFixed(3)} sats`}
+                    {msatsFormat(tx.amount)}
                   </td>
                   <td className="pa2 f7">
                     {tx.description.length > 17

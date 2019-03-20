@@ -10,11 +10,13 @@ import {
   PROMPT_PAYMENT,
   MAKE_INVOICE,
   PROMPT_INVOICE,
-  MAKE_PAYMENT
+  MAKE_PAYMENT,
+  PROMPT_ENABLE
 } from './constants'
 import Home from './components/Home'
 import Payment from './components/Payment'
 import Invoice from './components/Invoice'
+import Enable from './components/Enable'
 
 function App() {
   let [currentAction, setAction] = useState({type: BLANK})
@@ -61,7 +63,12 @@ function App() {
     case MAKE_PAYMENT:
     case PROMPT_PAYMENT:
       selectedMenu = MAKE_PAYMENT
-      page = <Payment invoice={currentAction.invoice} />
+      page = (
+        <Payment
+          origin={currentAction.origin}
+          invoice={currentAction.invoice}
+        />
+      )
       break
     case MAKE_INVOICE:
     case PROMPT_INVOICE:
@@ -72,6 +79,9 @@ function App() {
           pasteOn={currentAction.pasteOn}
         />
       )
+      break
+    case PROMPT_ENABLE:
+      page = <Enable origin={currentAction.origin} />
       break
   }
 
@@ -111,7 +121,7 @@ function App() {
           Pay
         </a>
       </nav>
-      <div className="w5">{page}</div>
+      <div className="w6">{page}</div>
     </main>
   )
 }

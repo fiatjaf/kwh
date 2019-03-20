@@ -21,10 +21,13 @@ export default function Invoice({invoice, pasteOn}) {
         method: 'invoice',
         params: [satoshis * 1000, `KwH.${cuid.slug()}`, desc],
         behaviors: {
-          success: ['paste-invoice'],
-          failure: ['notify-invoice-error']
-        },
-        extra: {pasteOn}
+          success: [
+            'paste-invoice',
+            'return-invoice',
+            'cleanup-browser-action'
+          ],
+          failure: ['notify-invoice-error', 'cleanup-browser-action']
+        }
       })
       .then(({bolt11}) => {
         setBolt11(bolt11)

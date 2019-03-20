@@ -5,8 +5,9 @@ import React, {useState, useEffect} from 'react' // eslint-disable-line
 import AutosizeInput from 'react-input-autosize'
 
 import ShowInvoice from './ShowInvoice'
+import {msatsFormat} from '../utils'
 
-export default function Payment({invoice}) {
+export default function Payment({invoice, origin}) {
   let [bolt11, setBolt11] = useState(invoice || '')
   let [doneTyping, setDoneTyping] = useState(!!invoice)
 
@@ -41,8 +42,16 @@ export default function Payment({invoice}) {
         method: 'pay',
         params: {bolt11: invoice, msatoshi: satoshiActual || undefined},
         behaviors: {
-          success: ['notify-payment-success', 'navigate-home'],
-          failure: ['notify-payment-error', 'navigate-home']
+          success: [
+            'notify-payment-success',
+            'return-preimage',
+            'navigate-home'
+          ],
+          failure: [
+            'notify-payment-error',
+            'return-payment-error',
+            'navigate-home'
+          ]
         }
       })
       .then(() => {
@@ -92,7 +101,7 @@ export default function Payment({invoice}) {
           Pay{' '}
           {invoiceData.msatoshi ? (
             <span className={valueClasses}>
-              {(invoiceData.msatoshi / 1000).toFixed(3)}
+              {msatsFormat(invoiceData.msatoshi)}
             </span>
           ) : (
             <AutosizeInput

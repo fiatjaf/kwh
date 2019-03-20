@@ -51,13 +51,15 @@
     "default_popup": "popup.html"
   },
   "web_accessible_resources": [
-    "inpage-bundle.js"
+    "webln-bundle.js"
   ],
   "permissions": [
     "storage",
     "clipboardWrite",
     "activeTab",
     "notifications",
-    "contextMenus"
+    "contextMenus",
+    "https://",
+    "http://"
   ]
 }

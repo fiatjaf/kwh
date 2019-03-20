@@ -2,36 +2,52 @@
 
 import browser from 'webextension-polyfill'
 
-import {HOME, PROMPT_PAYMENT, PROMPT_INVOICE} from './constants'
-import {rpcCall, getOriginData} from './utils'
+import {
+  HOME,
+  PROMPT_PAYMENT,
+  PROMPT_INVOICE,
+  PROMPT_ENABLE,
+  prompt_label
+} from './constants'
+import {
+  rpcCall,
+  getOriginData,
+  emphasizeBrowserAction,
+  cleanupBrowserAction
+} from './utils'
 import {getBehavior} from './predefined-behaviors'
 
 // return the current action to anyone asking for it -- normally the popup
 browser.runtime.onMessage.addListener(({getPopupAction}) => {
   if (!getPopupAction) return
-  return Promise.resolve({popupAction: currentAction})
+  return Promise.resolve({popupAction: currentAction[0]})
 })
 
 // set current action when anyone -- normally the popup -- wants
 browser.runtime.onMessage.addListener(({setAction}) => {
   if (!setAction) return
-  setCurrentAction(setAction, false)
+
+  return new Promise((resolve, reject) => {
+    let action = setAction
+    setCurrentAction(action, false, {resolve, reject})
+  })
 })
 
-var currentAction = {type: HOME}
-export function setCurrentAction(action, sendMessage = true) {
-  currentAction = action
+const blankAction = {type: HOME}
+var actionIdNext = 1
+var currentAction = [{blankAction, id: 0}, null]
+export function setCurrentAction(action, sendMessage = true, promise = null) {
+  currentAction = [{...action, id: actionIdNext++}, promise]
 
-  if (currentAction.type === PROMPT_PAYMENT) {
-    browser.browserAction.setBadgeText({text: 'pay'})
-    browser.browserAction.setIcon({
-      path: {16: 'icon16-active.png', 64: 'icon64-active.png'}
-    })
+  if (
+    action.type === PROMPT_PAYMENT ||
+    action.type === PROMPT_INVOICE ||
+    action.type === PROMPT_ENABLE
+  ) {
+    let label = prompt_label[action.type]
+    emphasizeBrowserAction(label)
   } else {
-    browser.browserAction.setBadgeText({text: ''})
-    browser.browserAction.setIcon({
-      path: {16: 'icon16.png', 64: 'icon64.png'}
-    })
+    cleanupBrowserAction()
   }
 
   if (sendMessage) {
@@ -39,8 +55,9 @@ export function setCurrentAction(action, sendMessage = true) {
   }
 
   if (
-    currentAction.type === PROMPT_PAYMENT ||
-    currentAction.type === PROMPT_INVOICE
+    action.type === PROMPT_PAYMENT ||
+    action.type === PROMPT_INVOICE ||
+    action.type === PROMPT_ENABLE
   ) {
     if (browser.browserAction.openPopup) {
       browser.browserAction.openPopup().catch(() => {})
@@ -52,23 +69,38 @@ export function setCurrentAction(action, sendMessage = true) {
 browser.runtime.onMessage.addListener(
   ({rpc, method, params, behaviors = {}, extra = {}}) => {
     if (!rpc) return
+
     let resPromise = rpcCall(method, params)
 
     resPromise.then(res => {
       ;(behaviors.success || [])
         .map(getBehavior)
-        .forEach(behavior => behavior(res, extra))
+        .forEach(behavior => behavior(res, currentAction))
     })
 
     resPromise.catch(err => {
       ;(behaviors.failure || [])
         .map(getBehavior)
-        .forEach(behavior => behavior(err, extra))
+        .forEach(behavior => behavior(err, currentAction))
     })
 
     return resPromise
   }
 )
+
+// trigger behaviors from popup action
+browser.runtime.onMessage.addListener(({triggerBehaviors, behaviors}) => {
+  if (!triggerBehaviors) return
+  behaviors.map(getBehavior).forEach(behavior => behavior(null, currentAction))
+})
+
+// return if a domain is authorized or authorize a domain
+browser.runtime.onMessage.addListener(({getAuthorized, domain}) => {
+  if (!getAuthorized) return
+  return browser.storage.local
+    .get('authorized')
+    .then(authorized => authorized[domain])
+})
 
 // context menus
 // 'pay with lightning' context menu

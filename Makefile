@@ -1,7 +1,7 @@
 all: build
 
 icons: static/icon64.png static/icon128.png static/icon48.png static/icon16.png static/icon64-active.png static/icon128-active.png static/icon48-active.png static/icon16-active.png
-build: icons static/inpage-bundle.js static/content-bundle.js static/background-bundle.js static/popup-bundle.js static/options-bundle.js static/style.css
+build: icons static/webln-bundle.js static/content-bundle.js static/background-bundle.js static/popup-bundle.js static/options-bundle.js static/style.css
 
 static/icon%.png: icon.png
 	convert $< -resize $*x$* $@
@@ -15,7 +15,7 @@ static/background-bundle.js: src/background.js src/predefined-behaviors.js src/u
 static/content-bundle.js: src/content.js src/utils.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
-static/inpage-bundle.js: src/inpage.js src/utils.js
+static/webln-bundle.js: src/webln.js src/utils.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
 static/popup-bundle.js: src/popup.js $(shell find src/components/)

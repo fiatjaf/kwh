@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 
 const Keysim = require('keysim')
 
-import {PROMPT_PAYMENT} from './constants'
+import {PROMPT_ENABLE, PROMPT_PAYMENT} from './constants'
 import {getOriginData} from './utils'
 
 if (document) {
@@ -71,5 +71,60 @@ if (document) {
     let keyboard = Keysim.Keyboard.US_ENGLISH
     el.value = bolt11
     keyboard.dispatchEventsForInput(bolt11, el)
+  })
+
+  // insert webln
+  var script = document.createElement('script')
+  script.src = browser.runtime.getURL('webln-bundle.js')
+  ;(document.head || document.documentElement).appendChild(script)
+
+  // communicate with webln
+  window.addEventListener('message', ev => {
+    // only accept messages from the current window
+    if (ev.source !== window) return
+
+    if (ev.data && ev.data.application === 'KwH' && !ev.data.response) {
+      let {type, ...extra} = ev.data
+      let origin = getOriginData()
+
+      let action = {
+        ...extra,
+        type,
+        origin
+      }
+
+      console.debug(
+        `[KwH]: ${type} ${JSON.stringify(extra)} ${JSON.stringify(origin)}`
+      )
+
+      return Promise.resolve()
+        .then(() => {
+          if (type === PROMPT_ENABLE) {
+            // if already authorized just return it
+            return browser.runtime.sendMessage({
+              getAuthorized: true,
+              domain: origin.domain
+            })
+          } else {
+            return null
+          }
+        })
+        .then(response => {
+          if (response !== null) {
+            // we have a response already. end here.
+            return response
+          }
+
+          // proceed to call the background page and prompt the user if necessary
+          browser.runtime
+            .sendMessage({setAction: action})
+            .then(response => {
+              window.postMessage({response: true, data: response}, '*')
+            })
+            .catch(err => {
+              window.postMessage({response: true, error: err}, '*')
+            })
+        })
+    }
   })
 }
