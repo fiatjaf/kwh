@@ -57,7 +57,12 @@ browser.runtime.onMessage.addListener(
     if (!rpc) return
 
     tab = sender.tab || tab
-    let resPromise = rpcCall(method, params)
+    let resPromise = rpcCall(method, params).then(res => {
+      if (res.code) {
+        throw new Error(res.message || res.code)
+      }
+      return res
+    })
 
     resPromise.then(res => {
       ;(behaviors.success || [])

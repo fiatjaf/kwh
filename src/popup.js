@@ -52,7 +52,7 @@ function App() {
   function navigateTo(type) {
     let action = {type}
     setAction(action)
-    browser.runtime.sendMessage({setAction: action, proxiedTab})
+    browser.runtime.sendMessage({setAction: action, tab: proxiedTab})
   }
 
   var selectedMenu

@@ -103,12 +103,14 @@ export default function Payment() {
 
   return (
     <div className="w-100">
-      <div className="flex justify-center pa2">
-        <span className="ma1 f7">
-          Sending a payment on <span className="b">{action.origin.name}</span>
-        </span>
-        <img src={action.origin.icon || ''} className="ma1 h3" />
-      </div>
+      {action.origin && (
+        <div className="flex justify-center pa2">
+          <span className="ma1 f7">
+            Sending a payment on <span className="b">{action.origin.name}</span>
+          </span>
+          <img src={action.origin.icon || ''} className="ma1 h3" />
+        </div>
+      )}
       {invoiceData && (
         <div className="lh-copy">
           Pay{' '}
