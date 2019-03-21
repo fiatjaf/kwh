@@ -7,9 +7,3 @@ export const MAKE_PAYMENT = 'MAKE_PAYMENT'
 export const PROMPT_INVOICE = 'PROMPT_INVOICE'
 export const MAKE_INVOICE = 'MAKE_INVOICE'
 export const PROMPT_ENABLE = 'PROMPT_ENABLE'
-
-export const prompt_label = {
-  PROMPT_PAYMENT: 'pay',
-  PROMPT_INVOICE: 'inv',
-  PROMPT_ENABLE: 'auth'
-}

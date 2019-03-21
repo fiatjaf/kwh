@@ -96,16 +96,10 @@ export function msatsFormat(msatoshis) {
   }
 }
 
-export function emphasizeBrowserAction(label) {
-  browser.browserAction.setBadgeText({text: label})
-  browser.browserAction.setIcon({
-    path: {16: 'icon16-active.png', 64: 'icon64-active.png'}
-  })
-}
-
-export function cleanupBrowserAction() {
-  browser.browserAction.setBadgeText({text: ''})
-  browser.browserAction.setIcon({
-    path: {16: 'icon16.png', 64: 'icon64.png'}
-  })
+export function sprint(o) {
+  return Object.keys(o)
+    .map(
+      k => `${k}='${typeof o[k] === 'string' ? o[k] : JSON.stringify(o[k])}'`
+    )
+    .join(' ')
 }

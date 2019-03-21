@@ -56,9 +56,9 @@
   "permissions": [
     "storage",
     "clipboardWrite",
-    "activeTab",
     "notifications",
     "contextMenus",
+    "tabs",
     "<all_urls>"
   ]
 }

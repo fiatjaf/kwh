@@ -22,7 +22,9 @@ class WebLNProvider {
   }
 
   sendPayment(invoice) {
-    return this.enable().then(() => this._prompt(PROMPT_PAYMENT, {invoice}))
+    return this.enable()
+      .then(() => this._prompt(PROMPT_PAYMENT, {invoice}))
+      .then(preimage => ({preimage}))
   }
 
   makeInvoice(args) {
@@ -30,7 +32,9 @@ class WebLNProvider {
       if (typeof args !== 'object') {
         args = {amount: args}
       }
-      return this._prompt(PROMPT_INVOICE, args)
+      return this._prompt(PROMPT_INVOICE, args).then(bolt11 => ({
+        paymentRequest: bolt11
+      }))
     })
   }
 

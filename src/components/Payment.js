@@ -1,15 +1,17 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
-import React, {useState, useEffect} from 'react' // eslint-disable-line
+import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
 import AutosizeInput from 'react-input-autosize'
 
-import ShowInvoice from './ShowInvoice'
+import {CurrentContext} from '../popup'
 import {msatsFormat} from '../utils'
 
-export default function Payment({invoice, origin}) {
-  let [bolt11, setBolt11] = useState(invoice || '')
-  let [doneTyping, setDoneTyping] = useState(!!invoice)
+export default function Payment() {
+  let {action, tab} = useContext(CurrentContext)
+
+  let [bolt11, setBolt11] = useState(action.invoice || '')
+  let [doneTyping, setDoneTyping] = useState(!!action.invoice)
 
   let [invoiceData, setInvoiceData] = useState(null)
   let [satoshiActual, setSatoshiActual] = useState(0)
@@ -20,12 +22,12 @@ export default function Payment({invoice, origin}) {
       if (bolt11 === '' || doneTyping === false) return
 
       browser.runtime
-        .sendMessage({rpc: true, method: 'decodepay', params: [invoice]})
+        .sendMessage({tab, rpc: true, method: 'decodepay', params: [bolt11]})
         .then(data => {
           setInvoiceData(data)
         })
     },
-    [doneTyping]
+    [bolt11, doneTyping]
   )
 
   function typedInvoice(e) {
@@ -38,9 +40,10 @@ export default function Payment({invoice, origin}) {
 
     browser.runtime
       .sendMessage({
+        tab,
         rpc: true,
         method: 'pay',
-        params: {bolt11: invoice, msatoshi: satoshiActual || undefined},
+        params: {bolt11, msatoshi: satoshiActual || undefined},
         behaviors: {
           success: [
             'notify-payment-success',
@@ -101,10 +104,10 @@ export default function Payment({invoice, origin}) {
   return (
     <div className="w-100">
       <div className="flex justify-center pa2">
-        <span className="ma1 f4">
-          Sending a payment on <span className="b">{origin.name}</span>
+        <span className="ma1 f7">
+          Sending a payment on <span className="b">{action.origin.name}</span>
         </span>
-        <img src={origin.icon || ''} className="ma1 w-25 h-25" />
+        <img src={action.origin.icon || ''} className="ma1 h3" />
       </div>
       {invoiceData && (
         <div className="lh-copy">
@@ -150,7 +153,6 @@ export default function Payment({invoice, origin}) {
           </div>
         </div>
       )}
-      <ShowInvoice invoice={invoice} />
     </div>
   )
 }

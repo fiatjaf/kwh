@@ -1,12 +1,15 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
-import React, {useState, useEffect} from 'react' // eslint-disable-line
+import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
 import friendlyTime from 'friendly-time'
 
+import {CurrentContext} from '../popup'
 import {msatsFormat} from '../utils'
 
 export default function Home() {
+  let {tab} = useContext(CurrentContext)
+
   let [invoices, setInvoices] = useState([])
   let [payments, setPayments] = useState([])
   let [nodeInfo, setNodeInfo] = useState({})
@@ -15,7 +18,7 @@ export default function Home() {
 
   useEffect(() => {
     browser.runtime
-      .sendMessage({rpc: true, method: 'getinfo'})
+      .sendMessage({tab, rpc: true, method: 'getinfo'})
       .then(({blockheight, id, alias, color, address}) => {
         address =
           address.length === 0
@@ -24,22 +27,22 @@ export default function Home() {
         setNodeInfo({blockheight, id, alias, color, address})
       })
     browser.runtime
-      .sendMessage({rpc: true, method: 'listfunds'})
+      .sendMessage({tab, rpc: true, method: 'listfunds'})
       .then(({channels}) => {
         let balance = channels.reduce((acc, ch) => acc + ch.channel_sat, 0)
         setBalance(balance)
       })
     browser.runtime
-      .sendMessage({rpc: true, method: 'listinvoices'})
+      .sendMessage({tab, rpc: true, method: 'listinvoices'})
       .then(resp => {
         setInvoices(resp.invoices.filter(inv => inv.status === 'paid'))
       })
     browser.runtime
-      .sendMessage({rpc: true, method: 'listpayments'})
+      .sendMessage({tab, rpc: true, method: 'listpayments'})
       .then(resp => {
         setPayments(resp.payments.filter(pay => pay.status === 'complete'))
       })
-    browser.runtime.sendMessage({getAuthorized: true}).then(setAuthorized)
+    browser.runtime.sendMessage({tab, getAuthorized: true}).then(setAuthorized)
   }, [])
 
   let transactions = invoices
@@ -79,19 +82,19 @@ export default function Home() {
       <div className="f5 tc dark-pink b">{balance} satoshis</div>
       <h1 className="f6 ma3">Latest transactions</h1>
       <div className="flex justify-center">
-        <table>
+        <table className="f">
           <tbody>
             {transactions.map((tx, i) => (
               <tr key={i} className="bg-light-yellow hover-bg-light-pink">
-                <td className="b pa2 f7">{formatDate(tx.date)}</td>
+                <td className="pa1 f7">{formatDate(tx.date)}</td>
                 <td
                   className={
-                    'code tr pa2 f6 ' + (tx.amount < 0 ? 'dark-pink' : 'green')
+                    'code tr pa1 f7 ' + (tx.amount < 0 ? 'dark-pink' : 'green')
                   }
                 >
                   {msatsFormat(tx.amount)}
                 </td>
-                <td className="pa2 f7">
+                <td className="pa1 f7">
                   {tx.description.length > 17
                     ? tx.description.slice(0, 16) + '…'
                     : tx.description}

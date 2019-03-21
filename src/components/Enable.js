@@ -1,12 +1,17 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
-import React, {useState, useEffect} from 'react' // eslint-disable-line
+import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
 
-export default function Enable({origin}) {
+import {CurrentContext} from '../popup'
+
+export default function Enable() {
+  let {action, tab} = useContext(CurrentContext)
+
   function authorize(e) {
     e.preventDefault()
     browser.runtime.sendMessage({
+      tab,
       triggerBehaviors: true,
       behaviors: ['allow-enable-domain', 'navigate-home']
     })
@@ -16,6 +21,7 @@ export default function Enable({origin}) {
   function cancel(e) {
     e.preventDefault()
     browser.runtime.sendMessage({
+      tab,
       triggerBehaviors: true,
       behaviors: ['reject-enable', 'navigate-home']
     })
@@ -24,19 +30,19 @@ export default function Enable({origin}) {
 
   return (
     <div>
-      <div className="flex justify-center pa2">
-        <img src={origin.icon || ''} className="ma1 w-25 h-25" />
-        <div className="ma1 h-25 w-25 flex justify-center items-center content-center f2 light-pink">
+      <div className="flex justify-center items-center content-center pa2">
+        <img src={action.origin.icon || ''} className="ma1 w-25" />
+        <div className="ma1 w-25 flex justify-center items-center content-center f2 light-pink">
           ⇄
         </div>
         <img
           src={browser.runtime.getURL('icon128-active.png')}
-          className="ma1 w-25 h-25"
+          className="ma1 w-25"
         />
       </div>
       <p className="f4 tc pa2">
-        <span className="b">{origin.name || origin.domain}</span> wants to
-        connect.
+        <span className="b">{action.origin.name || action.origin.domain}</span>{' '}
+        wants to connect.
       </p>
       <div className="flex justify-between">
         <button

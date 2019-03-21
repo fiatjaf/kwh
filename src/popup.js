@@ -17,14 +17,20 @@ import Home from './components/Home'
 import Payment from './components/Payment'
 import Invoice from './components/Invoice'
 import Enable from './components/Enable'
+import {sprint} from './utils'
+
+export const CurrentContext = React.createContext({action: null, tab: null})
 
 function App() {
-  let [currentAction, setAction] = useState({type: BLANK})
+  let [currentAction, setAction] = useState(null)
+  let [proxiedTab, setProxiedTab] = useState(null)
 
   useEffect(() => {
     // when this page is rendered, query the current action
-    browser.runtime.sendMessage({getCurrentAction: true}).then(({action}) => {
+    browser.runtime.sendMessage({getInit: true}).then(({action, tab}) => {
+      console.log(`[action]: ${sprint(action)} tab=${tab.id}`)
       setAction(action)
+      setProxiedTab(tab)
     })
 
     // if this page is already opened when a new action is set, react to it
@@ -32,6 +38,7 @@ function App() {
     return () => browser.runtime.onMessage.removeListener(newActionListener)
     function newActionListener(message) {
       if (message.setAction) {
+        console.log(`[action]: ${JSON.stringify(message.setAction)}`)
         setAction(message.setAction)
       }
     }
@@ -45,12 +52,12 @@ function App() {
   function navigateTo(type) {
     let action = {type}
     setAction(action)
-    browser.runtime.sendMessage({setAction: action})
+    browser.runtime.sendMessage({setAction: action, proxiedTab})
   }
 
   var selectedMenu
   var page = <div />
-  switch (currentAction.type) {
+  switch (currentAction && currentAction.type) {
     case BLANK:
       page = <div />
       break
@@ -61,30 +68,15 @@ function App() {
     case MAKE_PAYMENT:
     case PROMPT_PAYMENT:
       selectedMenu = MAKE_PAYMENT
-      page = (
-        <Payment
-          origin={currentAction.origin}
-          invoice={currentAction.invoice}
-        />
-      )
+      page = <Payment />
       break
     case MAKE_INVOICE:
     case PROMPT_INVOICE:
       selectedMenu = MAKE_INVOICE
-      page = (
-        <Invoice
-          invoice={currentAction.invoice}
-          pasteOn={currentAction.pasteOn}
-          amount={currentAction.amount}
-          defaultAmount={currentAction.defaultAmount}
-          minimumAmount={currentAction.minimumAmount}
-          maximumAmount={currentAction.maximumAmount}
-          defaultMemo={currentAction.defaultMemo}
-        />
-      )
+      page = <Invoice />
       break
     case PROMPT_ENABLE:
-      page = <Enable origin={currentAction.origin} />
+      page = <Enable />
       break
   }
 
@@ -92,7 +84,7 @@ function App() {
   let activeNavItemClasses = ' b green bg-light-yellow'
 
   return (
-    <main className="bg-washed-green pa4 black-70">
+    <main className="bg-washed-green pb4 pr1 pl1 black-70 sans-serif">
       <nav className="pa1 flex justify-between">
         <a
           className={
@@ -124,7 +116,9 @@ function App() {
           Pay
         </a>
       </nav>
-      <div className="w6">{page}</div>
+      <CurrentContext.Provider value={{tab: proxiedTab, action: currentAction}}>
+        <div className="w6">{page}</div>
+      </CurrentContext.Provider>
     </main>
   )
 }

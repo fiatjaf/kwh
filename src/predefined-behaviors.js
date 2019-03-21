@@ -3,15 +3,14 @@
 import browser from 'webextension-polyfill'
 
 import {HOME} from './constants'
-import {setCurrentAction} from './background'
-import {cleanupBrowserAction} from './utils'
+import {set, cleanupBrowserAction} from './current-action'
 
 const behaviors = {
-  'navigate-home': () => {
-    setCurrentAction({type: HOME})
+  'navigate-home': (_, __, tabId) => {
+    set(tabId, {type: HOME})
   },
   'return-preimage': ({payment_preimage}, [_, promise]) => {
-    if (promise) promise.resolve({preimage: payment_preimage})
+    if (promise) promise.resolve(payment_preimage)
   },
   'notify-payment-success': ({msatoshi, msatoshi_sent}, _) => {
     browser.notifications.create({
@@ -44,11 +43,11 @@ const behaviors = {
       })
     }
   },
-  'save-invoice-to-current-action': ({bolt11}, [action, _]) => {
-    setCurrentAction({...action, invoice: bolt11})
+  'save-invoice-to-current-action': ({bolt11}, [action, _], tabId) => {
+    set(tabId, {...action, invoice: bolt11})
   },
   'return-invoice': ({bolt11}, [_, promise]) => {
-    if (promise) promise.resolve({paymentRequest: bolt11})
+    if (promise) promise.resolve(bolt11)
   },
   'notify-invoice-error': (e, _) => {
     browser.notifications.create({
@@ -73,8 +72,8 @@ const behaviors = {
   'reject-enable': (__, [_, promise]) => {
     promise.reject(new Error('Unauthorized.'))
   },
-  'cleanup-browser-action': () => {
-    cleanupBrowserAction()
+  'cleanup-browser-action': (_, [action]) => {
+    cleanupBrowserAction(action.tabId)
   }
 }
 

@@ -2,55 +2,41 @@
 
 import browser from 'webextension-polyfill'
 
-import {
-  HOME,
-  PROMPT_PAYMENT,
-  PROMPT_INVOICE,
-  PROMPT_ENABLE,
-  prompt_label
-} from './constants'
-import {
-  rpcCall,
-  getOriginData,
-  emphasizeBrowserAction,
-  cleanupBrowserAction
-} from './utils'
+import {PROMPT_PAYMENT, PROMPT_INVOICE, PROMPT_ENABLE} from './constants'
+import {rpcCall, getOriginData, sprint} from './utils'
 import {getBehavior} from './predefined-behaviors'
+import * as current from './current-action'
 
-// return the current action to anyone asking for it -- normally the popup
-browser.runtime.onMessage.addListener(({getCurrentAction}) => {
-  if (!getCurrentAction) return
-  return Promise.resolve({action: currentAction[0]})
+// logger service
+browser.runtime.onMessage.addListener((message, sender) => {
+  console.log(
+    `[message-in]: ${sprint({
+      ...message,
+      tab: message.getInit ? '-' : sender.tab || message.tab
+    })}}`
+  )
 })
 
-// set current action when anyone -- normally the popup -- wants
-browser.runtime.onMessage.addListener(({setAction}) => {
-  if (!setAction) return
-
-  return new Promise((resolve, reject) => {
-    let action = setAction
-    setCurrentAction(action, false, {resolve, reject})
+// return the current action to anyone asking for it -- normally the popup
+browser.runtime.onMessage.addListener(({getInit}) => {
+  if (!getInit) return
+  return browser.tabs.query({active: true}).then(tabs => {
+    let tab = tabs[0]
+    return {action: current.get(tab.id)[0], tab: {id: tab.id}}
   })
 })
 
-const blankAction = {type: HOME}
-var actionIdNext = 1
-var currentAction = [{...blankAction, id: 0}, null]
-export function setCurrentAction(action, sendMessage = true, promise = null) {
-  currentAction = [{...action, id: actionIdNext++}, promise]
+// set current action when anyone -- normally the popup -- wants
+browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
+  if (!setAction) return
 
-  if (
-    action.type === PROMPT_PAYMENT ||
-    action.type === PROMPT_INVOICE ||
-    action.type === PROMPT_ENABLE
-  ) {
-    let label = prompt_label[action.type]
-    emphasizeBrowserAction(label)
-  } else {
-    cleanupBrowserAction()
-  }
+  tab = sender.tab || tab
+  let action = setAction
 
-  if (sendMessage) {
+  let promise = current.set(tab.id, action)
+
+  if (tab) {
+    // means it's coming from the content-script, not the popup
     browser.runtime.sendMessage({setAction: action}).catch(() => {})
   }
 
@@ -59,29 +45,30 @@ export function setCurrentAction(action, sendMessage = true, promise = null) {
     action.type === PROMPT_INVOICE ||
     action.type === PROMPT_ENABLE
   ) {
-    if (browser.browserAction.openPopup) {
-      browser.browserAction.openPopup().catch(() => {})
-    }
+    browser.browserAction.openPopup().catch(() => {})
   }
-}
+
+  return promise
+})
 
 // do an rpc call on behalf of anyone who wants that -- normally the popup
 browser.runtime.onMessage.addListener(
-  ({rpc, method, params, behaviors = {}, extra = {}}) => {
+  ({rpc, method, params, behaviors = {}, extra = {}, tab}, sender) => {
     if (!rpc) return
 
+    tab = sender.tab || tab
     let resPromise = rpcCall(method, params)
 
     resPromise.then(res => {
       ;(behaviors.success || [])
         .map(getBehavior)
-        .forEach(behavior => behavior(res, currentAction))
+        .forEach(behavior => behavior(res, current.get(tab.id), tab.id))
     })
 
     resPromise.catch(err => {
       ;(behaviors.failure || [])
         .map(getBehavior)
-        .forEach(behavior => behavior(err, currentAction))
+        .forEach(behavior => behavior(err, current.get(tab.id), tab.id))
     })
 
     return resPromise
@@ -89,21 +76,29 @@ browser.runtime.onMessage.addListener(
 )
 
 // trigger behaviors from popup action
-browser.runtime.onMessage.addListener(({triggerBehaviors, behaviors}) => {
-  if (!triggerBehaviors) return
-  behaviors.map(getBehavior).forEach(behavior => behavior(null, currentAction))
-})
+browser.runtime.onMessage.addListener(
+  ({triggerBehaviors, behaviors, tab}, sender) => {
+    if (!triggerBehaviors) return
+    tab = sender.tab || tab
+    behaviors
+      .map(getBehavior)
+      .forEach(behavior => behavior(null, current.get(tab.id), tab.id))
+  }
+)
 
 // return if a domain is authorized or authorize a domain
-browser.runtime.onMessage.addListener(({getAuthorized, domain}) => {
-  if (!getAuthorized) return
-  return browser.storage.local.get('authorized').then(res => {
-    let authorized = res.authorized || {}
-    return domain
-      ? authorized[domain]
-      : authorized /* return all if domain not given */
-  })
-})
+browser.runtime.onMessage.addListener(
+  ({getAuthorized, domain, tab}, sender) => {
+    if (!getAuthorized) return
+    tab = sender.tab || tab
+    return browser.storage.local.get('authorized').then(res => {
+      let authorized = res.authorized || {}
+      return domain
+        ? authorized[domain]
+        : authorized /* return all if domain not given */
+    })
+  }
+)
 
 // context menus
 // 'pay with lightning' context menu
@@ -125,14 +120,14 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
   switch (info.menuItemId) {
     case 'pay-invoice':
       // set current action to pay this invoice
-      setCurrentAction({
+      current.set(tab.id, {
         type: PROMPT_PAYMENT,
         invoice: currentInvoice,
         origin: getOriginData()
       })
       break
     case 'generate-invoice-here':
-      setCurrentAction({
+      current.set(tab.id, {
         type: PROMPT_INVOICE,
         pasteOn: [tab.id, info.targetElementId],
         origin: getOriginData()

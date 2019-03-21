@@ -5,7 +5,7 @@ import browser from 'webextension-polyfill'
 const Keysim = require('keysim')
 
 import {PROMPT_ENABLE, PROMPT_PAYMENT} from './constants'
-import {getOriginData} from './utils'
+import {getOriginData, sprint} from './utils'
 
 if (document) {
   // intercept any `lightning:` links
@@ -94,9 +94,7 @@ if (document) {
         origin
       }
 
-      console.debug(
-        `[KwH]: ${type} ${JSON.stringify(extra)} ${JSON.stringify(origin)}`
-      )
+      console.log(`[KwH]: ${type} ${sprint(extra)} ${sprint(origin)}`)
 
       return Promise.resolve()
         .then(() => {

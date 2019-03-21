@@ -1,34 +1,32 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
-import React, {useState, useEffect} from 'react' // eslint-disable-line
+import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
 import AutosizeInput from 'react-input-autosize'
 import cuid from 'cuid'
 
+import {CurrentContext} from '../popup'
 import ShowInvoice from './ShowInvoice'
 
-export default function Invoice({
-  invoice,
-  pasteOn,
-  amount,
-  defaultAmount,
-  minimumAmount,
-  maximumAmount,
-  defaultMemo
-}) {
-  defaultAmount = defaultAmount || maximumAmount || minimumAmount || 100
+export default function Invoice() {
+  let {action, tab} = useContext(CurrentContext)
 
-  let [bolt11, setBolt11] = useState(invoice)
-  let [satoshis, setSatoshis] = useState(amount || defaultAmount)
-  let [desc, setDesc] = useState(defaultMemo || 'Generated on KwH')
+  let defaultAmount =
+    action.defaultAmount || action.maximumAmount || action.minimumAmount || 100
+  let amountFixed = !!action.amount
 
-  let amountFixed = !!amount
+  let [bolt11, setBolt11] = useState(action.invoice)
+  let [satoshis, setSatoshis] = useState(action.amount || defaultAmount)
+  let [desc, setDesc] = useState(
+    action.defaultMemo || `KwH invoice on ${action.origin.domain}`
+  )
 
   function makeInvoice(e) {
     e.preventDefault()
 
     browser.runtime
       .sendMessage({
+        tab,
         rpc: true,
         method: 'invoice',
         params: [satoshis * 1000, `KwH.${cuid.slug()}`, desc],
@@ -58,7 +56,7 @@ export default function Invoice({
           <div className="ln-copy">
             Generating an invoice of
             {amountFixed ? (
-              <span className={inputClasses}>{amount}</span>
+              <span className={inputClasses}>{action.amount}</span>
             ) : (
               <AutosizeInput
                 type="number"
@@ -66,8 +64,8 @@ export default function Invoice({
                 value={satoshis}
                 onChange={e => setSatoshis(e.target.value)}
                 step="1"
-                min={minimumAmount || 1}
-                max={maximumAmount || Infinity}
+                min={action.minimumAmount || 1}
+                max={action.maximumAmount || Infinity}
               />
             )}
             satoshis described as{' '}
