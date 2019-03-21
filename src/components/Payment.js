@@ -102,17 +102,17 @@ export default function Payment() {
   let valueClasses = 'dark-pink hover-gold code b f6'
 
   return (
-    <div className="w-100">
+    <div className="lh-copy wrap tj measure w5 pa2">
       {action.origin && (
-        <div className="flex justify-center pa2">
-          <span className="ma1 f7">
+        <div className="flex justify-center pb2">
+          <div className="ma1 f7">
             Sending a payment on <span className="b">{action.origin.name}</span>
-          </span>
+          </div>
           <img src={action.origin.icon || ''} className="ma1 h3" />
         </div>
       )}
       {invoiceData && (
-        <div className="lh-copy">
+        <div>
           Pay{' '}
           {invoiceData.msatoshi ? (
             <span className={valueClasses}>

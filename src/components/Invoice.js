@@ -51,13 +51,13 @@ export default function Invoice() {
   let inputClasses = 'dark-pink hover-gold code b f6 bg-transparent pa1'
 
   return (
-    <div className="w-100">
+    <div className="lh-copy wrap tj measure w5 pa2">
       {bolt11 ? (
         <ShowInvoice invoice={bolt11} />
       ) : (
         <form onSubmit={makeInvoice}>
-          <div className="ln-copy">
-            Generating an invoice of
+          <div>
+            Making an invoice of
             {amountFixed ? (
               <span className={inputClasses}>{action.amount}</span>
             ) : (

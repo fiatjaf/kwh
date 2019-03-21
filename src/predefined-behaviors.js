@@ -4,6 +4,7 @@ import browser from 'webextension-polyfill'
 
 import {HOME} from './constants'
 import {set, cleanupBrowserAction} from './current-action'
+import {msatsFormat} from './utils'
 
 const behaviors = {
   'navigate-home': (_, __, tabId) => {
@@ -15,9 +16,9 @@ const behaviors = {
   'notify-payment-success': ({msatoshi, msatoshi_sent}, _) => {
     browser.notifications.create({
       type: 'basic',
-      message: `${parseInt(
-        msatoshi / 1000
-      )} satoshis paid with a fee of ${msatoshi_sent - msatoshi}msats.`,
+      message: `${msatsFormat(msatoshi)} paid with a fee of ${msatsFormat(
+        msatoshi_sent - msatoshi
+      )}.`,
       title: 'Payment succeeded',
       iconUrl: '/icon64-active.png'
     })

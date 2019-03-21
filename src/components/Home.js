@@ -54,10 +54,10 @@ export default function Home() {
     .slice(-15)
     .concat(
       payments
-        .map(({created_at, msatoshi, description = ''}) => ({
+        .map(({created_at, msatoshi, description, payment_preimage}) => ({
           date: created_at,
           amount: -msatoshi,
-          description
+          description: description || payment_preimage
         }))
         .slice(-15)
     )
@@ -94,7 +94,7 @@ export default function Home() {
                 >
                   {msatsFormat(tx.amount)}
                 </td>
-                <td className="pa1 f7">
+                <td className="pa1 f7" title={tx.description}>
                   {tx.description.length > 17
                     ? tx.description.slice(0, 16) + '…'
                     : tx.description}

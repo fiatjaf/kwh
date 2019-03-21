@@ -11,7 +11,7 @@ export default function ShowInvoice({invoice}) {
         fgColor="#000000"
         level="Q"
         value={invoice.toUpperCase()}
-        className="w20"
+        className="w-100 tc"
       />
       <p className="code tj wrap">{invoice}</p>
     </div>
