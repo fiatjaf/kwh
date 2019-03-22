@@ -51,6 +51,10 @@ export function emphasizeBrowserAction(tabId, type) {
     tabId
   })
   browser.browserAction.setBadgeBackgroundColor({color: bg, tabId})
+
+  try {
+    browser.browserAction.setBadgeTextColor({color: '#ffffff'})
+  } catch (e) {}
 }
 
 export function cleanupBrowserAction(tabId) {
