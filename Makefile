@@ -35,8 +35,13 @@ pack.zip: build
 sources.zip: build
 	rm -fr tmpsrc/
 	mkdir -p tmpsrc
+	mkdir -p tmpsrc/src
+	mkdir -p tmpsrc/static
 	cd static && \
-        cp -r icon.png *.html *.js tmpsrc/
+        cp -r *.html ../tmpsrc/static/
+	cd src && \
+        cp -r *.js ../tmpsrc/src
+	cp *.png package.json Makefile README.md tmpsrc/
 	cd tmpsrc/ && \
         zip -r sources * && \
         mv sources.zip ../
