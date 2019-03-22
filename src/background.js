@@ -66,12 +66,17 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
           }' wants to be able to prompt you for payments and invoices.`
         ]
       }[action.type]
-      browser.notifications.create(`openpopup-${action.id}`, {
+
+      let notificationId = `openpopup-${action.id}`
+      browser.notifications.create(notificationId, {
         type: 'basic',
         title,
         message,
         iconUrl: '/icon64-active.png'
       })
+      setTimeout(() => {
+        browser.notification.clear(notificationId)
+      }, 4000)
     })
   }
 

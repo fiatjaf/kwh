@@ -29,6 +29,7 @@ export function set(tabId, action) {
   // schedule cleanup
   setTimeout(() => {
     delete currentActions[tabId]
+    cleanupBrowserAction(tabId)
   }, 1000 * 60 * 4 /* 4 minutes */)
 
   let promise = new Promise((resolve, reject) => {
