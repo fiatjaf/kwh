@@ -8,7 +8,7 @@ const fetch = window.fetch
 export function getOriginData() {
   return {
     domain: getDomain(),
-    name: getName(),
+    name: getName().split(/\W[^\w ]\W/)[0],
     icon: getIcon()
   }
 

@@ -3,7 +3,7 @@
 import browser from 'webextension-polyfill'
 
 import {PROMPT_PAYMENT, PROMPT_INVOICE, PROMPT_ENABLE} from './constants'
-import {rpcCall, getOriginData, sprint} from './utils'
+import {rpcCall, getOriginData, sprint, msatsFormat} from './utils'
 import {getBehavior} from './predefined-behaviors'
 import * as current from './current-action'
 
@@ -31,24 +31,58 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
   if (!setAction) return
 
   tab = sender.tab || tab
-  let action = setAction
-
-  let promise = current.set(tab.id, action)
+  let [action, promise] = current.set(tab.id, setAction)
 
   if (tab) {
     // means it's coming from the content-script, not the popup
+    // so we notify the popup just in case it's open and needs to update
     browser.runtime.sendMessage({setAction: action}).catch(() => {})
   }
 
+  // notify user there's an action waiting for him in the popup
+  // either by opening the popup or by showing a notification
   if (
     action.type === PROMPT_PAYMENT ||
     action.type === PROMPT_INVOICE ||
     action.type === PROMPT_ENABLE
   ) {
-    browser.browserAction.openPopup().catch(() => {})
+    browser.browserAction.openPopup().catch(() => {
+      // if that fails, show a notification
+      let [title, message] = {
+        [PROMPT_PAYMENT]: [
+          'Send a payment',
+          `'${action.origin.name}' is requesting a payment!`
+        ],
+        [PROMPT_INVOICE]: [
+          'Make an invoice',
+          `'${action.origin.name}' needs an invoice${
+            action.amount ? `for ${msatsFormat(action.amount * 1000)}` : ''
+          }.`
+        ],
+        [PROMPT_ENABLE]: [
+          `Connect to ${action.origin.domain}`,
+          `'${
+            action.origin.name
+          }' wants to be able to prompt you for payments and invoices.`
+        ]
+      }[action.type]
+      browser.notifications.create(`openpopup-${action.id}`, {
+        type: 'basic',
+        title,
+        message,
+        iconUrl: '/icon64-active.png'
+      })
+    })
   }
 
   return promise
+})
+
+browser.notifications.onClicked.addListener(notificationId => {
+  console.log('notification clicked', notificationId)
+  if (notificationId && notificationId.split('-')[0] === 'openpopup') {
+    browser.browserAction.openPopup().catch(err => console.log('err', err))
+  }
 })
 
 // do an rpc call on behalf of anyone who wants that -- normally the popup

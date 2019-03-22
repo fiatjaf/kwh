@@ -26,14 +26,15 @@ export function set(tabId, action) {
     cleanupBrowserAction(tabId)
   }
 
-  // cleanup
+  // schedule cleanup
   setTimeout(() => {
     delete currentActions[tabId]
   }, 1000 * 60 * 4 /* 4 minutes */)
 
-  return new Promise((resolve, reject) => {
+  let promise = new Promise((resolve, reject) => {
     currentActions[tabId] = [{...action, id: actionIdNext++}, {resolve, reject}]
   })
+  return [currentActions[tabId][0], promise]
 }
 
 export const prompt_defs = {
