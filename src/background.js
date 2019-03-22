@@ -12,7 +12,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
   console.log(
     `[message-in]: ${sprint({
       ...message,
-      tab: message.getInit ? '-' : sender.tab || message.tab
+      tab: message.getInit ? '-' : (sender.tab || message.tab).id
     })}}`
   )
 })
