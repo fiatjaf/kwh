@@ -10,6 +10,9 @@ const behaviors = {
   'navigate-home': (_, __, tabId) => {
     set(tabId, {type: HOME})
   },
+  'save-pending-to-current-action': (_, [action], tabId) => {
+    set(tabId, {...action, pending: true})
+  },
   'return-preimage': ({payment_preimage}, [_, promise]) => {
     if (promise) promise.resolve(payment_preimage)
   },

@@ -12,14 +12,14 @@ export default function Payment() {
 
   let [bolt11, setBolt11] = useState(action.invoice || '')
   let [doneTyping, setDoneTyping] = useState(!!action.invoice)
+  let [paymentPending, setPaymentPending] = useState(!!action.pending)
 
   let [invoiceData, setInvoiceData] = useState(null)
   let [satoshiActual, setSatoshiActual] = useState(0)
-  let [paymentPending, setPaymentPending] = useState(false)
 
   useEffect(
     () => {
-      if (bolt11 === '' || doneTyping === false) return
+      if (bolt11 === '' || doneTyping === false || paymentPending) return
 
       browser.runtime
         .sendMessage({tab, rpc: true, method: 'decodepay', params: [bolt11]})
@@ -39,6 +39,15 @@ export default function Payment() {
   function sendPayment(e) {
     e.preventDefault()
 
+    // set pending
+    setPaymentPending(true)
+    browser.runtime.sendMessage({
+      tab,
+      triggerBehaviors: true,
+      behaviors: ['save-pending-to-current-action']
+    })
+
+    // actually send payment
     browser.runtime
       .sendMessage({
         tab,
@@ -65,8 +74,6 @@ export default function Payment() {
       .catch(() => {
         window.close()
       })
-
-    setPaymentPending(true)
   }
 
   if (paymentPending) {
