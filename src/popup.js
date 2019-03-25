@@ -44,6 +44,8 @@ function App() {
     }
   }, [])
 
+  if (!proxiedTab) return <div />
+
   function navigate(e) {
     e.preventDefault()
     navigateTo(e.target.dataset.action)

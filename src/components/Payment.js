@@ -126,7 +126,7 @@ export default function Payment() {
               value={satoshiActual}
               onChange={e => setSatoshiActual(e.target.value)}
               step="10"
-              min="1"
+              min="100"
               max={Infinity}
             />
           )}{' '}
