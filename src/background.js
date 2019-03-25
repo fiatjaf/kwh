@@ -3,7 +3,7 @@
 import browser from 'webextension-polyfill'
 
 import {PROMPT_PAYMENT, PROMPT_INVOICE, PROMPT_ENABLE} from './constants'
-import {rpcCall, getOriginData, sprint, msatsFormat} from './utils'
+import {rpcCall, sprint, msatsFormat} from './utils'
 import {getBehavior} from './predefined-behaviors'
 import * as current from './current-action'
 
@@ -161,23 +161,25 @@ browser.contextMenus.create({
 })
 
 browser.contextMenus.onClicked.addListener((info, tab) => {
-  switch (info.menuItemId) {
-    case 'pay-invoice':
-      // set current action to pay this invoice
-      current.set(tab.id, {
-        type: PROMPT_PAYMENT,
-        invoice: currentInvoice,
-        origin: getOriginData()
-      })
-      break
-    case 'generate-invoice-here':
-      current.set(tab.id, {
-        type: PROMPT_INVOICE,
-        pasteOn: [tab.id, info.targetElementId],
-        origin: getOriginData()
-      })
-      break
-  }
+  browser.tabs.sendMessage(tab.id, {getOrigin: true}).then(origin => {
+    switch (info.menuItemId) {
+      case 'pay-invoice':
+        // set current action to pay this invoice
+        current.set(tab.id, {
+          type: PROMPT_PAYMENT,
+          invoice: currentInvoice,
+          origin
+        })
+        break
+      case 'generate-invoice-here':
+        current.set(tab.id, {
+          type: PROMPT_INVOICE,
+          pasteOn: [tab.id, info.targetElementId],
+          origin
+        })
+        break
+    }
+  })
 })
 
 var currentInvoice = ''

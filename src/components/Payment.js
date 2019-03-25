@@ -26,6 +26,7 @@ export default function Payment() {
         .then(data => {
           setInvoiceData(data)
         })
+        .catch(err => console.log('error', err))
     },
     [bolt11, doneTyping]
   )

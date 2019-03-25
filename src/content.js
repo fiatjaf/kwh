@@ -58,20 +58,27 @@ if (document) {
     true
   )
 
-  // paste invoices on specific input fields
-  browser.runtime.onMessage.addListener(({paste, elementId, bolt11}) => {
-    if (!paste) return
+  // respond to all messages (because apparently content scripts can
+  // only have one onMessage handler)
+  browser.runtime.onMessage.addListener(
+    ({getOrigin, paste, elementId, bolt11}) => {
+      if (paste) {
+        // paste invoices on specific input fields
+        let el = elementId
+          ? browser.contextMenu.getTargetElement(elementId)
+          : document.activeElement
 
-    let el = elementId
-      ? browser.contextMenu.getTargetElement(elementId)
-      : document.activeElement
+        el.focus()
 
-    el.focus()
-
-    let keyboard = Keysim.Keyboard.US_ENGLISH
-    el.value = bolt11
-    keyboard.dispatchEventsForInput(bolt11, el)
-  })
+        let keyboard = Keysim.Keyboard.US_ENGLISH
+        el.value = bolt11
+        keyboard.dispatchEventsForInput(bolt11, el)
+      } else if (getOrigin) {
+        // return tab data to background page
+        return Promise.resolve(getOriginData())
+      }
+    }
+  )
 
   // insert webln
   var script = document.createElement('script')
