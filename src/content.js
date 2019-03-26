@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 
 const Keysim = require('keysim')
 
-import {PROMPT_ENABLE, PROMPT_PAYMENT} from './constants'
+import {PROMPT_ENABLE, PROMPT_PAYMENT, REQUEST_GETINFO} from './constants'
 import {getOriginData, sprint} from './utils'
 
 if (document) {
@@ -105,23 +105,30 @@ if (document) {
 
       return Promise.resolve()
         .then(() => {
-          if (type === PROMPT_ENABLE) {
-            if (enabled !== null) {
-              return enabled
-            }
+          switch (type) {
+            case PROMPT_ENABLE:
+              if (enabled !== null) {
+                // cached enabled response
+                return enabled
+              }
 
-            // if already authorized just return it
-            return browser.runtime
-              .sendMessage({
-                getAuthorized: true,
-                domain: origin.domain
+              // if already authorized just return it
+              return browser.runtime
+                .sendMessage({
+                  getAuthorized: true,
+                  domain: origin.domain
+                })
+                .then(v => {
+                  enabled = v
+                  return v
+                })
+            case REQUEST_GETINFO:
+              return browser.runtime.sendMessage({
+                rpc: true,
+                method: 'getinfo'
               })
-              .then(v => {
-                enabled = v
-                return v
-              })
-          } else {
-            return null
+            default:
+              return null
           }
         })
         .then(earlyResponse => {

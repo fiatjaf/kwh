@@ -1,24 +1,27 @@
 /** @format */
 
-import {PROMPT_ENABLE, PROMPT_PAYMENT, PROMPT_INVOICE} from './constants'
+import {
+  PROMPT_ENABLE,
+  PROMPT_PAYMENT,
+  PROMPT_INVOICE,
+  REQUEST_GETINFO
+} from './constants'
 
 class WebLNProvider {
-  constructor() {
-    this._promptActive = false
-  }
-
   enable() {
     return this._prompt(PROMPT_ENABLE)
   }
 
   getInfo() {
-    return this.enable().then(() =>
-      this._sendMessage({rpc: true, method: 'getinfo'}).then(info => ({
-        alias: info.alias,
-        pubkey: info.id,
-        color: info.color
+    return this.enable()
+      .then(() => this._prompt(REQUEST_GETINFO))
+      .then(info => ({
+        node: {
+          alias: info.alias,
+          pubkey: info.id,
+          color: info.color
+        }
       }))
-    )
   }
 
   sendPayment(invoice) {
@@ -47,7 +50,6 @@ class WebLNProvider {
   }
 
   _prompt(type, params) {
-    if (this._promptActive) return Promise.reject('A prompt is already active.')
     return this._sendMessage({type, ...params})
   }
 
