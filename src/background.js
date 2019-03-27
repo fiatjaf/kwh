@@ -2,7 +2,13 @@
 
 import browser from 'webextension-polyfill'
 
-import {PROMPT_PAYMENT, PROMPT_INVOICE} from './constants'
+import {
+  PROMPT_PAYMENT,
+  PROMPT_INVOICE,
+  MENUITEM_PAY,
+  MENUITEM_BLOCK,
+  MENUITEM_GENERATE
+} from './constants'
 import {rpcCall, sprint, msatsFormat, notify} from './utils'
 import {getBehavior} from './predefined-behaviors'
 import * as current from './current-action'
@@ -123,7 +129,7 @@ browser.runtime.onMessage.addListener(({getBlocked, domain, tab}, sender) => {
 // context menus
 // 'pay with lightning' context menu
 browser.contextMenus.create({
-  id: 'pay-invoice',
+  id: MENUITEM_PAY,
   title: 'Pay Lightning Invoice',
   contexts: ['selection', 'page'],
   visible: false
@@ -131,14 +137,14 @@ browser.contextMenus.create({
 
 // 'insert invoice' here context menu
 browser.contextMenus.create({
-  id: 'generate-invoice-here',
+  id: MENUITEM_GENERATE,
   title: 'Generate invoice here',
   contexts: ['editable']
 })
 
 // 'block domain' context menu
 browser.contextMenus.create({
-  id: 'block-domain',
+  id: MENUITEM_BLOCK,
   title: 'Prevent this site from calling webln',
   contexts: ['browser_action']
 })
@@ -146,22 +152,23 @@ browser.contextMenus.create({
 browser.contextMenus.onClicked.addListener((info, tab) => {
   browser.tabs.sendMessage(tab.id, {getOrigin: true}).then(origin => {
     switch (info.menuItemId) {
-      case 'pay-invoice':
+      case MENUITEM_PAY:
         // set current action to pay this invoice
         current.set(tab.id, {
           type: PROMPT_PAYMENT,
-          invoice: currentInvoice,
+          invoice: invoiceToPay,
           origin
         })
         break
-      case 'generate-invoice-here':
+      case MENUITEM_GENERATE:
         current.set(tab.id, {
           type: PROMPT_INVOICE,
           pasteOn: [tab.id, info.targetElementId],
+          defaultAmount: invoiceDefaultValue,
           origin
         })
         break
-      case 'block-domain':
+      case MENUITEM_BLOCK:
         browser.tabs.query({active: true}).then(tabs => {
           let tab = tabs[0]
 
@@ -191,13 +198,27 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
   })
 })
 
-var currentInvoice = ''
+var invoiceToPay = ''
+var invoiceDefaultValue = 100
 
-browser.runtime.onMessage.addListener(({contextMenu, invoice}) => {
+browser.runtime.onMessage.addListener(({contextMenu, text}) => {
+  // set context menu based on selected/right-clicked text
   if (!contextMenu) return
 
-  // set context menu visibility based on right-clicked text
-  currentInvoice = invoice.trim()
-  var visible = currentInvoice.slice(0, 4) === 'lnbc'
-  browser.contextMenus.update('pay-invoice', {visible})
+  // pay-invoice
+  invoiceToPay = text.trim()
+  var visible = invoiceToPay.slice(0, 4) === 'lnbc'
+  browser.contextMenus.update(MENUITEM_PAY, {visible})
+
+  // generate-invoice-here
+  invoiceDefaultValue = parseInt(text.trim())
+  if (!isNaN(invoiceDefaultValue)) {
+    browser.contextMenus.update(MENUITEM_GENERATE, {
+      title: `Generate ${msatsFormat(invoiceDefaultValue * 1000)} invoice here`
+    })
+  } else {
+    browser.contextMenus.update(MENUITEM_GENERATE, {
+      title: 'Generate invoice here'
+    })
+  }
 })

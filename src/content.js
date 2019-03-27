@@ -33,7 +33,9 @@ if (document) {
   })
 
   // listen for right-click events to show the context menu item
-  // when a potential lightning invoice is selected
+  // when a potential lightning invoice is selected.
+  // also works for numeric amounts that get passed to the generate
+  // invoice context menu.
   document.addEventListener(
     'mousedown',
     event => {
@@ -50,7 +52,7 @@ if (document) {
           // based on the content of the right-clicked text
           browser.runtime.sendMessage({
             contextMenu: true,
-            invoice
+            text: invoice
           })
         }
       }
