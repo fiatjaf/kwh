@@ -84,13 +84,13 @@ browser.runtime.onMessage.addListener(
     resPromise.then(res => {
       ;(behaviors.success || [])
         .map(getBehavior)
-        .forEach(behavior => behavior(res, current.get(tab.id), tab.id))
+        .forEach(behavior => behavior(res, current.get(tab.id), tab.id, extra))
     })
 
     resPromise.catch(err => {
       ;(behaviors.failure || [])
         .map(getBehavior)
-        .forEach(behavior => behavior(err, current.get(tab.id), tab.id))
+        .forEach(behavior => behavior(err, current.get(tab.id), tab.id, extra))
     })
 
     return resPromise
@@ -99,12 +99,12 @@ browser.runtime.onMessage.addListener(
 
 // trigger behaviors from popup action
 browser.runtime.onMessage.addListener(
-  ({triggerBehaviors, behaviors, tab}, sender) => {
+  ({triggerBehaviors, behaviors, extra = {}, tab}, sender) => {
     if (!triggerBehaviors) return
     tab = sender.tab || tab
     behaviors
       .map(getBehavior)
-      .forEach(behavior => behavior(null, current.get(tab.id), tab.id))
+      .forEach(behavior => behavior(null, current.get(tab.id), tab.id, extra))
   }
 )
 

@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 
 import {HOME} from './constants'
 import {set, cleanupBrowserAction} from './current-action'
-import {msatsFormat, notify} from './utils'
+import {rpcCall, msatsFormat, notify} from './utils'
 
 const behaviors = {
   'navigate-home': (_, __, tabId) => {
@@ -18,10 +18,10 @@ const behaviors = {
   },
   'notify-payment-success': ({msatoshi, msatoshi_sent}, _) => {
     notify({
+      title: 'Payment succeeded',
       message: `${msatsFormat(msatoshi)} paid with a fee of ${msatsFormat(
         msatoshi_sent - msatoshi
       )}.`,
-      title: 'Payment succeeded',
       iconUrl: '/icon64-active.png'
     })
   },
@@ -32,8 +32,7 @@ const behaviors = {
   'notify-payment-error': (e, _) => {
     notify({
       message: e.message,
-      title: 'Payment error',
-      iconUrl: '/icon64.png'
+      title: 'Payment error'
     })
   },
   'paste-invoice': ({bolt11}, [{pasteOn}]) => {
@@ -51,11 +50,25 @@ const behaviors = {
   'return-invoice': ({bolt11}, [_, promise]) => {
     if (promise) promise.resolve(bolt11)
   },
+  'wait-for-invoice': ({bolt11}, _, __, extra) => {
+    rpcCall('waitinvoice', [extra.newInvoiceLabel])
+      .then(({status, msatoshi, description}) => {
+        if (status === 'paid') {
+          notify({
+            title: 'Got payment',
+            message: `Your ${msatsFormat(
+              msatoshi
+            )} invoice ("${description}") was paid!`,
+            iconUrl: '/icon64-active.png'
+          })
+        }
+      })
+      .catch(() => {})
+  },
   'notify-invoice-error': (e, _) => {
     notify({
       message: e.message,
-      title: 'Error generating invoice',
-      iconUrl: '/icon64.png'
+      title: 'Error generating invoice'
     })
   },
   'cleanup-browser-action': (_, [action]) => {
