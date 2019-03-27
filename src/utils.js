@@ -109,6 +109,6 @@ export function notify(params, notificationId = null) {
   params = {type: 'basic', iconUrl: '/icon64.png', ...params}
   browser.notifications.create(notificationId, params)
   setTimeout(() => {
-    browser.notification.clear(notificationId)
+    browser.notifications.clear(notificationId)
   }, 3000)
 }
