@@ -25,13 +25,13 @@
   "dependencies": {
     "create-hmac": "^1.1.7",
     "cuid": "^2.1.6",
+    "debounce-with-args": "^1.0.1",
     "friendly-time": "^1.1.1",
     "keysim": "^2.1.0",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
     "react-input-autosize": "^2.2.1",
     "react-qr-svg": "^2.2.1",
-    "use-debounce": "^1.1.1",
     "webextension-polyfill": "^0.4.0"
   }
 }
