@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 
 import {HOME} from './constants'
 import {set, cleanupBrowserAction} from './current-action'
-import {msatsFormat} from './utils'
+import {msatsFormat, notify} from './utils'
 
 const behaviors = {
   'navigate-home': (_, __, tabId) => {
@@ -17,8 +17,7 @@ const behaviors = {
     if (promise) promise.resolve(payment_preimage)
   },
   'notify-payment-success': ({msatoshi, msatoshi_sent}, _) => {
-    browser.notifications.create({
-      type: 'basic',
+    notify({
       message: `${msatsFormat(msatoshi)} paid with a fee of ${msatsFormat(
         msatoshi_sent - msatoshi
       )}.`,
@@ -31,8 +30,7 @@ const behaviors = {
     if (promise) promise.reject(new Error('Payment failed or still pending.'))
   },
   'notify-payment-error': (e, _) => {
-    browser.notifications.create({
-      type: 'basic',
+    notify({
       message: e.message,
       title: 'Payment error',
       iconUrl: '/icon64.png'
@@ -54,8 +52,7 @@ const behaviors = {
     if (promise) promise.resolve(bolt11)
   },
   'notify-invoice-error': (e, _) => {
-    browser.notifications.create({
-      type: 'basic',
+    notify({
       message: e.message,
       title: 'Error generating invoice',
       iconUrl: '/icon64.png'

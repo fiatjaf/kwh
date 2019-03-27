@@ -78,9 +78,9 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className="f6 ma3">Balance</h1>
+      <h1 className="f6 ma3 tc">Balance</h1>
       <div className="f5 tc dark-pink b">{balance} satoshis</div>
-      <h1 className="f6 ma3">Latest transactions</h1>
+      <h1 className="f6 ma3 tc">Latest transactions</h1>
       <div className="flex justify-center">
         <table className="f">
           <tbody>
@@ -104,14 +104,16 @@ export default function Home() {
           </tbody>
         </table>
       </div>
-      <h1 className="f6 ma3">Node</h1>
-      <div>
+      <h1 className="f6 ma3 tc">Node</h1>
+      <div style={{border: `5px solid #${nodeInfo.color}`}} className="pa1 ma2">
         <table>
           <tbody>
             {['alias', 'id', 'address', 'blockheight'].map(attr => (
               <tr key={attr}>
                 <td className="lh-title b tr dark-pink">{attr}</td>
-                <td className="wrap code lh-copy">{nodeInfo[attr]}</td>
+                <td className="wrap code lh-copy measure-narrow">
+                  {nodeInfo[attr]}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -119,7 +121,7 @@ export default function Home() {
       </div>
       {Object.keys(blocked).length > 0 && (
         <>
-          <h1 className="f6 ma3">Blacklist</h1>
+          <h1 className="f6 ma3 tc">Blacklist</h1>
           <div>
             <table>
               <tbody>

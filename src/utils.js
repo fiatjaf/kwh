@@ -103,3 +103,12 @@ export function sprint(o) {
     )
     .join(' ')
 }
+
+export function notify(params, notificationId = null) {
+  notificationId = notificationId || 'n-' + Math.random()
+  params = {type: 'basic', iconUrl: '/icon64.png', ...params}
+  browser.notifications.create(notificationId, params)
+  setTimeout(() => {
+    browser.notification.clear(notificationId)
+  }, 3000)
+}

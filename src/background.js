@@ -3,7 +3,7 @@
 import browser from 'webextension-polyfill'
 
 import {PROMPT_PAYMENT, PROMPT_INVOICE} from './constants'
-import {rpcCall, sprint, msatsFormat} from './utils'
+import {rpcCall, sprint, msatsFormat, notify} from './utils'
 import {getBehavior} from './predefined-behaviors'
 import * as current from './current-action'
 
@@ -57,26 +57,15 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
         ]
       }[action.type]
 
-      let notificationId = `openpopup-${action.id}`
-      browser.notifications.create(notificationId, {
-        type: 'basic',
+      notify({
         title,
         message,
         iconUrl: '/icon64-active.png'
       })
-      setTimeout(() => {
-        browser.notification.clear(notificationId)
-      }, 3000)
     })
   }
 
   return promise
-})
-
-browser.notifications.onClicked.addListener(notificationId => {
-  if (notificationId && notificationId.split('-')[0] === 'openpopup') {
-    browser.browserAction.openPopup().catch(err => console.log('err', err))
-  }
 })
 
 // do an rpc call on behalf of anyone who wants that -- normally the popup
@@ -147,6 +136,13 @@ browser.contextMenus.create({
   contexts: ['editable']
 })
 
+// 'block domain' context menu
+browser.contextMenus.create({
+  id: 'block-domain',
+  title: 'Prevent this site from calling webln',
+  contexts: ['browser_action']
+})
+
 browser.contextMenus.onClicked.addListener((info, tab) => {
   browser.tabs.sendMessage(tab.id, {getOrigin: true}).then(origin => {
     switch (info.menuItemId) {
@@ -163,6 +159,32 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
           type: PROMPT_INVOICE,
           pasteOn: [tab.id, info.targetElementId],
           origin
+        })
+        break
+      case 'block-domain':
+        browser.tabs.query({active: true}).then(tabs => {
+          let tab = tabs[0]
+
+          browser.storage.local
+            .get('blocked')
+            .then(({blocked}) => {
+              blocked = blocked || {}
+              blocked[origin.domain] = true
+              browser.storage.local.set({blocked})
+            })
+            .then(() => {
+              notify({
+                title: `${origin.domain} was blocked`,
+                message:
+                  'Refreshing the page is necessary for the modifications to take place.'
+              })
+            })
+            .catch(err => {
+              notify({
+                title: `Error blocking ${origin.domain}`,
+                message: err.message
+              })
+            })
         })
         break
     }
