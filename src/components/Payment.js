@@ -2,7 +2,6 @@
 
 import browser from 'webextension-polyfill'
 import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
-import AutosizeInput from 'react-input-autosize'
 
 import {CurrentContext} from '../popup'
 import {msatsFormat} from '../utils'
@@ -127,9 +126,8 @@ export default function Payment() {
               {msatsFormat(invoiceData.msatoshi)}
             </span>
           ) : (
-            <AutosizeInput
-              type="number"
-              className={valueClasses + ' bg-transparent w3'}
+            <input
+              className={valueClasses + ' ml1 mr1 bn bg-transparent w3'}
               value={satoshiActual}
               onChange={e => setSatoshiActual(e.target.value)}
               step="10"

@@ -1,14 +1,16 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
-import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
-import AutosizeInput from 'react-input-autosize'
+import React, {useState, useEffect, useContext, useRef} from 'react' // eslint-disable-line
+import ContentEditable from 'react-contenteditable'
 import cuid from 'cuid'
 
 import {CurrentContext} from '../popup'
 import ShowInvoice from './ShowInvoice'
 
 export default function Invoice() {
+  const contentEditable = useRef()
+
   let {action, tab} = useContext(CurrentContext)
 
   let defaultAmount =
@@ -32,7 +34,11 @@ export default function Invoice() {
         tab,
         rpc: true,
         method: 'invoice',
-        params: [satoshis * 1000, `KwH.${cuid.slug()}`, desc],
+        params: [
+          satoshis * 1000,
+          `KwH.${cuid.slug()}`,
+          desc.replace(/&nbsp;/g, '').trim()
+        ],
         behaviors: {
           success: [
             'paste-invoice',
@@ -51,7 +57,7 @@ export default function Invoice() {
   let inputClasses = 'dark-pink hover-gold code b f6 bg-transparent pa1'
 
   return (
-    <div className="lh-copy wrap tj measure w5 pa2">
+    <div className="lh-copy wrap tl measure w5 pa2">
       {bolt11 ? (
         <ShowInvoice invoice={bolt11} />
       ) : (
@@ -61,21 +67,22 @@ export default function Invoice() {
             {amountFixed ? (
               <span className={inputClasses}>{action.amount}</span>
             ) : (
-              <AutosizeInput
-                type="number"
-                className={inputClasses}
+              <input
+                className={inputClasses + ' ml1 mr1 bn bg-transparent w3'}
                 value={satoshis}
                 onChange={e => setSatoshis(e.target.value)}
-                step="1"
+                step="10"
                 min={action.minimumAmount || 1}
                 max={action.maximumAmount || Infinity}
               />
             )}
             satoshis described as{' '}
-            <AutosizeInput
-              className={inputClasses}
-              value={desc}
+            <ContentEditable
+              innerRef={contentEditable}
+              html={desc}
+              className={inputClasses + ' bn wrap'}
               onChange={e => setDesc(e.target.value)}
+              tagName="span"
             />
             .
           </div>
