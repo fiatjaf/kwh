@@ -10,13 +10,11 @@ import {
   PROMPT_PAYMENT,
   MAKE_INVOICE,
   PROMPT_INVOICE,
-  MAKE_PAYMENT,
-  PROMPT_ENABLE
+  MAKE_PAYMENT
 } from './constants'
 import Home from './components/Home'
 import Payment from './components/Payment'
 import Invoice from './components/Invoice'
-import Enable from './components/Enable'
 import {sprint} from './utils'
 
 export const CurrentContext = React.createContext({action: null, tab: null})
@@ -76,9 +74,6 @@ function App() {
     case PROMPT_INVOICE:
       selectedMenu = MAKE_INVOICE
       page = <Invoice />
-      break
-    case PROMPT_ENABLE:
-      page = <Enable />
       break
   }
 

@@ -2,7 +2,7 @@
 
 import browser from 'webextension-polyfill'
 
-import {PROMPT_PAYMENT, PROMPT_INVOICE, PROMPT_ENABLE} from './constants'
+import {PROMPT_PAYMENT, PROMPT_INVOICE} from './constants'
 import {rpcCall, sprint, msatsFormat} from './utils'
 import {getBehavior} from './predefined-behaviors'
 import * as current from './current-action'
@@ -41,11 +41,7 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
 
   // notify user there's an action waiting for him in the popup
   // either by opening the popup or by showing a notification
-  if (
-    action.type === PROMPT_PAYMENT ||
-    action.type === PROMPT_INVOICE ||
-    action.type === PROMPT_ENABLE
-  ) {
+  if (action.type === PROMPT_PAYMENT || action.type === PROMPT_INVOICE) {
     browser.browserAction.openPopup().catch(() => {
       // if that fails, show a notification
       let [title, message] = {
@@ -58,12 +54,6 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
           `'${action.origin.name}' needs an invoice${
             action.amount ? `for ${msatsFormat(action.amount * 1000)}` : ''
           }.`
-        ],
-        [PROMPT_ENABLE]: [
-          `Connect to ${action.origin.domain}`,
-          `'${
-            action.origin.name
-          }' wants to be able to prompt you for payments and invoices.`
         ]
       }[action.type]
 
@@ -76,7 +66,7 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
       })
       setTimeout(() => {
         browser.notification.clear(notificationId)
-      }, 4000)
+      }, 3000)
     })
   }
 
@@ -84,7 +74,6 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
 })
 
 browser.notifications.onClicked.addListener(notificationId => {
-  console.log('notification clicked', notificationId)
   if (notificationId && notificationId.split('-')[0] === 'openpopup') {
     browser.browserAction.openPopup().catch(err => console.log('err', err))
   }
@@ -131,18 +120,16 @@ browser.runtime.onMessage.addListener(
 )
 
 // return if a domain is authorized or authorize a domain
-browser.runtime.onMessage.addListener(
-  ({getAuthorized, domain, tab}, sender) => {
-    if (!getAuthorized) return
-    tab = sender.tab || tab
-    return browser.storage.local.get('authorized').then(res => {
-      let authorized = res.authorized || {}
-      return domain
-        ? authorized[domain]
-        : authorized /* return all if domain not given */
-    })
-  }
-)
+browser.runtime.onMessage.addListener(({getBlocked, domain, tab}, sender) => {
+  if (!getBlocked) return
+  tab = sender.tab || tab
+  return browser.storage.local.get('blocked').then(res => {
+    let blocked = res.blocked || {}
+    return domain
+      ? blocked[domain] || false
+      : blocked /* return all if domain not given */
+  })
+})
 
 // context menus
 // 'pay with lightning' context menu

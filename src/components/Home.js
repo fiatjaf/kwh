@@ -14,7 +14,7 @@ export default function Home() {
   let [payments, setPayments] = useState([])
   let [nodeInfo, setNodeInfo] = useState({})
   let [balance, setBalance] = useState(0)
-  let [authorized, setAuthorized] = useState({})
+  let [blocked, setBlocked] = useState({})
 
   useEffect(() => {
     browser.runtime
@@ -42,7 +42,7 @@ export default function Home() {
       .then(resp => {
         setPayments(resp.payments.filter(pay => pay.status === 'complete'))
       })
-    browser.runtime.sendMessage({tab, getAuthorized: true}).then(setAuthorized)
+    browser.runtime.sendMessage({tab, getBlocked: true}).then(setBlocked)
   }, [])
 
   let transactions = invoices
@@ -65,13 +65,13 @@ export default function Home() {
     .slice(-15)
     .reverse()
 
-  function deauthorize(e) {
+  function unblock(e) {
     e.preventDefault()
     let domain = e.target.dataset.domain
-    browser.storage.local.get('authorized').then(({authorized}) => {
-      delete authorized[domain]
-      return browser.storage.local.set({authorized}).then(() => {
-        setAuthorized(authorized)
+    browser.storage.local.get('blocked').then(({blocked}) => {
+      delete blocked[domain]
+      return browser.storage.local.set({blocked}).then(() => {
+        setBlocked(blocked)
       })
     })
   }
@@ -117,29 +117,33 @@ export default function Home() {
           </tbody>
         </table>
       </div>
-      <h1 className="f6 ma3">Enabled domains</h1>
-      <div>
-        <table>
-          <tbody>
-            {Object.keys(authorized)
-              .map(domain => [domain, authorized[domain]])
-              .map(([domain, _]) => (
-                <tr key={domain}>
-                  <td className="lh-title b tr dark-pink">{domain}</td>
-                  <td>
-                    <button
-                      className="di bg-animate bg-light-gray bn button-reset f7 hover-bg-dark-gray pa1 pointer gray hover-white"
-                      onClick={deauthorize}
-                      data-domain={domain}
-                    >
-                      disable
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
+      {Object.keys(blocked).length > 0 && (
+        <>
+          <h1 className="f6 ma3">Blacklist</h1>
+          <div>
+            <table>
+              <tbody>
+                {Object.keys(blocked)
+                  .map(domain => [domain, blocked[domain]])
+                  .map(([domain, _]) => (
+                    <tr key={domain}>
+                      <td className="lh-title b tr dark-pink">{domain}</td>
+                      <td>
+                        <button
+                          className="di bg-animate bg-light-gray bn button-reset f7 hover-bg-dark-gray pa1 pointer gray hover-white"
+                          onClick={unblock}
+                          data-domain={domain}
+                        >
+                          allow
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   )
 }

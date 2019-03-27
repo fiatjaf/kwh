@@ -61,21 +61,6 @@ const behaviors = {
       iconUrl: '/icon64.png'
     })
   },
-  'allow-enable-domain': (__, [action, promise]) => {
-    browser.storage.local
-      .get('authorized')
-      .then(({authorized}) => {
-        return browser.storage.local.set({
-          authorized: {...authorized, [action.origin.domain]: true}
-        })
-      })
-      .then(() => {
-        promise.resolve(true)
-      })
-  },
-  'reject-enable': (__, [_, promise]) => {
-    promise.reject(new Error('Unauthorized.'))
-  },
   'cleanup-browser-action': (_, [action]) => {
     cleanupBrowserAction(action.tabId)
   }

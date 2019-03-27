@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 
 const Keysim = require('keysim')
 
-import {PROMPT_ENABLE, PROMPT_PAYMENT, REQUEST_GETINFO} from './constants'
+import {PROMPT_PAYMENT, REQUEST_GETINFO} from './constants'
 import {getOriginData, sprint} from './utils'
 
 if (document) {
@@ -86,42 +86,41 @@ if (document) {
   ;(document.head || document.documentElement).appendChild(script)
 
   // communicate with webln
-  var enabled = null
+  var _blocked = null
   window.addEventListener('message', ev => {
     // only accept messages from the current window
     if (ev.source !== window) return
+    if (!ev.data || ev.data.application !== 'KwH' || ev.data.response) return
 
-    if (ev.data && ev.data.application === 'KwH' && !ev.data.response) {
-      let {type, ...extra} = ev.data
-      let origin = getOriginData()
+    let origin = getOriginData()
 
-      let action = {
-        ...extra,
-        type,
-        origin
-      }
+    let {type, ...extra} = ev.data
+    let action = {
+      ...extra,
+      type,
+      origin
+    }
 
-      console.log(`[KwH]: ${type} ${sprint(extra)} ${sprint(origin)}`)
+    Promise.resolve()
+      .then(() => {
+        if (ev.data.getBlocked) {
+          // return blocked status for this site
+          if (_blocked !== null) return _blocked
 
-      return Promise.resolve()
-        .then(() => {
+          return browser.runtime
+            .sendMessage({
+              getBlocked: true,
+              domain: origin.domain
+            })
+            .then(blocked => {
+              _blocked = blocked
+              return blocked
+            })
+        } else {
+          // default: an action or prompt
+          console.log(`[KwH]: ${type} ${sprint(extra)} ${sprint(origin)}`)
+
           switch (type) {
-            case PROMPT_ENABLE:
-              if (enabled !== null) {
-                // cached enabled response
-                return enabled
-              }
-
-              // if already authorized just return it
-              return browser.runtime
-                .sendMessage({
-                  getAuthorized: true,
-                  domain: origin.domain
-                })
-                .then(v => {
-                  enabled = v
-                  return v
-                })
             case REQUEST_GETINFO:
               return browser.runtime.sendMessage({
                 rpc: true,
@@ -130,29 +129,29 @@ if (document) {
             default:
               return null
           }
-        })
-        .then(earlyResponse => {
-          if (earlyResponse !== null && earlyResponse !== undefined) {
-            // we have a response already. end here.
-            return earlyResponse
-          } else {
-            // proceed to call the background page
-            // and prompt the user if necessary
-            return browser.runtime.sendMessage({setAction: action})
-          }
-        })
-        .then(response => {
-          window.postMessage(
-            {response: true, application: 'KwH', data: response},
-            '*'
-          )
-        })
-        .catch(err => {
-          window.postMessage(
-            {response: true, application: 'KwH', error: err},
-            '*'
-          )
-        })
-    }
+        }
+      })
+      .then(earlyResponse => {
+        if (earlyResponse !== null && earlyResponse !== undefined) {
+          // we have a response already. end here.
+          return earlyResponse
+        } else {
+          // proceed to call the background page
+          // and prompt the user if necessary
+          return browser.runtime.sendMessage({setAction: action})
+        }
+      })
+      .then(response => {
+        window.postMessage(
+          {response: true, application: 'KwH', data: response},
+          '*'
+        )
+      })
+      .catch(err => {
+        window.postMessage(
+          {response: true, application: 'KwH', error: err},
+          '*'
+        )
+      })
   })
 }

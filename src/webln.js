@@ -9,7 +9,13 @@ import {
 
 class WebLNProvider {
   enable() {
-    return this._prompt(PROMPT_ENABLE)
+    return this._sendMessage({getBlocked: true}).then(blocked => {
+      if (blocked) {
+        throw new Error('webln acess is blocked on this page.')
+      }
+
+      return true
+    })
   }
 
   getInfo() {
