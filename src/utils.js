@@ -1,7 +1,6 @@
 /** @format */
 
-import browser from 'webextension-polyfill'
-import createHmac from 'create-hmac'
+import {browser} from './browser'
 
 const fetch = window.fetch
 
@@ -84,6 +83,8 @@ export function rpcParamsAreSet() {
 }
 
 export function rpcCall(method, params = []) {
+  const createHmac = require('create-hmac')
+
   return getRpcParams().then(({endpoint, username, password}) => {
     let accessKey = createHmac('sha256', `${username}:${password}`)
       .update('access-key')

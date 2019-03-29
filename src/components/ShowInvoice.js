@@ -1,7 +1,8 @@
 /** @format */
 
-import React from 'react' // eslint-disable-line
-import {QRCode} from 'react-qr-svg'
+const {QRCode} = require('react-qr-svg')
+
+import React from '../react' // eslint-disable-line
 
 export default function ShowInvoice({invoice}) {
   return (

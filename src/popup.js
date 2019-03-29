@@ -1,8 +1,9 @@
 /** @format */
 
-import browser from 'webextension-polyfill'
-import React, {useState, useEffect} from 'react' // eslint-disable-line
-import {render} from 'react-dom'
+import React, {useState, useEffect} from './react' // eslint-disable-line
+const {render} = require('react-dom')
+
+import {browser} from './browser'
 
 import {
   BLANK,
@@ -15,10 +16,9 @@ import {
 import Home from './components/Home'
 import Payment from './components/Payment'
 import Invoice from './components/Invoice'
-import {RPCParams} from './options'
+import RPCParams from './components/RPCParams'
 import {sprint, rpcParamsAreSet} from './utils'
-
-export const CurrentContext = React.createContext({action: null, tab: null})
+import {CurrentContext} from './popup-context'
 
 function App() {
   let [currentAction, setAction] = useState(null)

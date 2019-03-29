@@ -1,7 +1,6 @@
 /** @format */
 
-import browser from 'webextension-polyfill'
-
+import {browser} from './browser'
 import {
   PROMPT_PAYMENT,
   PROMPT_INVOICE,

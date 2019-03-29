@@ -9,28 +9,21 @@ static/icon%.png: icon.png
 static/icon%-active.png: icon-active.png
 	convert $< -resize $*x$* $@
 
-static/background-bundle.js: src/background.js src/predefined-behaviors.js src/current-action.js src/utils.js
-	./node_modules/.bin/browserifyinc $< -dv --outfile $@
+targets = static/background-bundle.js static/content-bundle.js static/webln-bundle.js static/options-bundle.js static/popup-bundle.js
 
-static/content-bundle.js: src/content.js src/utils.js
-	./node_modules/.bin/browserifyinc $< -dv --outfile $@
-
-static/webln-bundle.js: src/webln.js src/utils.js
-	./node_modules/.bin/browserifyinc $< -dv --outfile $@
-
-static/popup-bundle.js: src/popup.js $(shell find src/components/)
-	./node_modules/.bin/browserifyinc $< -dv --outfile $@
-
-static/options-bundle.js: src/options.js src/utils.js
-	./node_modules/.bin/browserifyinc $< -dv --outfile $@
+$(targets): static/%-bundle.js: src/%.js src/utils.js src/browser.js
+	echo ">>> building $<"
+	./node_modules/.bin/rollup -c rollup.config.js -i $< -o tmp-rolluped.js
+	./node_modules/.bin/browserify tmp-rolluped.js -dv --outfile $@
+	rm tmp-rolluped.js
 
 static/style.css: src/style.styl
 	./node_modules/.bin/stylus < $< > $@
 
-pack.zip: build
+extension.zip: build
 	cd static/ && \
         zip -r pack * && \
-        mv pack.zip ../
+        mv extension.zip ../
 
 sources.zip: build
 	rm -fr tmpsrc/

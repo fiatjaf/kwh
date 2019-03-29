@@ -4,6 +4,6 @@ node_modules
 static/icon*
 static/*.js
 static/*.css
-browserify-cache.json
 *.zip
 tmpsrc
+tmp-rolluped.js

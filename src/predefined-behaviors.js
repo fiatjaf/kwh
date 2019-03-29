@@ -1,7 +1,6 @@
 /** @format */
 
-import browser from 'webextension-polyfill'
-
+import {browser} from './browser'
 import {HOME} from './constants'
 import {set, cleanupBrowserAction} from './current-action'
 import {rpcCall, msatsFormat, notify} from './utils'

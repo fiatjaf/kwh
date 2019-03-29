@@ -1,11 +1,11 @@
 /** @format */
 
-import browser from 'webextension-polyfill'
-import React, {useState, useEffect, useContext, useRef} from 'react' // eslint-disable-line
-import ContentEditable from 'react-contenteditable'
-import cuid from 'cuid'
+const cuid = require('cuid')
+const ContentEditable = require('react-contenteditable').default
 
-import {CurrentContext} from '../popup'
+import React, {useState, useEffect, useContext, useRef} from '../react' // eslint-disable-line
+import {browser} from '../browser'
+import {CurrentContext} from '../popup-context'
 import ShowInvoice from './ShowInvoice'
 
 export default function Invoice() {

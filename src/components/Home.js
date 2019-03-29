@@ -1,10 +1,10 @@
 /** @format */
 
-import browser from 'webextension-polyfill'
-import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
-import friendlyTime from 'friendly-time'
+const friendlyTime = require('friendly-time')
 
-import {CurrentContext} from '../popup'
+import React, {useState, useEffect, useContext} from '../react' // eslint-disable-line
+import {browser} from '../browser'
+import {CurrentContext} from '../popup-context'
 import {msatsFormat} from '../utils'
 
 export default function Home() {

@@ -1,9 +1,8 @@
 /** @format */
 
-import browser from 'webextension-polyfill'
+import {Keyboard} from 'keysim'
 
-const Keysim = require('keysim')
-
+import {browser} from './browser'
 import {PROMPT_PAYMENT, REQUEST_GETINFO} from './constants'
 import {getOriginData, rpcParamsAreSet, sprint} from './utils'
 
@@ -72,7 +71,7 @@ if (document) {
 
         el.focus()
 
-        let keyboard = Keysim.Keyboard.US_ENGLISH
+        let keyboard = Keyboard.US_ENGLISH
         el.value = bolt11
         keyboard.dispatchEventsForInput(bolt11, el)
       } else if (getOrigin) {
