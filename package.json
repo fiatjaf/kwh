@@ -13,7 +13,8 @@
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-resolve": "^4.0.1",
     "rollup-plugin-sourcemaps": "^0.4.2",
-    "stylus": "^0.54.5"
+    "stylus": "^0.54.5",
+    "terser": "^3.17.0"
   },
   "dependencies": {
     "create-hmac": "^1.1.7",

@@ -14,7 +14,7 @@ targets = static/background-bundle.js static/content-bundle.js static/webln-bund
 $(targets): static/%-bundle.js: src/%.js src/utils.js src/browser.js
 	echo ">>> building $<"
 	./node_modules/.bin/rollup -c rollup.config.js -i $< -o tmp-rolluped.js
-	./node_modules/.bin/browserify tmp-rolluped.js -dv --outfile $@
+	./node_modules/.bin/browserify tmp-rolluped.js -dv | ./node_modules/.bin/terser --compress --mangle --source-map -o $@
 	rm tmp-rolluped.js
 
 static/style.css: src/style.styl
@@ -22,7 +22,7 @@ static/style.css: src/style.styl
 
 extension.zip: build
 	cd static/ && \
-        zip -r pack * && \
+        zip -r extension.zip * && \
         mv extension.zip ../
 
 sources.zip: build
