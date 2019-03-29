@@ -59,26 +59,48 @@ export function getOriginData() {
   }
 }
 
-export function rpcCall(method, params = []) {
-  return browser.storage.local
-    .get(['endpoint', 'username', 'password'])
-    .then(({endpoint, username, password}) => {
-      let accessKey = createHmac('sha256', `${username}:${password}`)
-        .update('access-key')
-        .digest('base64')
-        .replace(/\W+/g, '')
+export const defaultRpcParams = {
+  endpoint: 'http://localhost:9737/rpc',
+  username: '',
+  password: ''
+}
 
-      return fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'X-Requested-With': 'kwh-extension',
-          'X-Access': accessKey
-        },
-        body: JSON.stringify({method, params})
-      }).then(r => r.json())
-    })
+export function getRpcParams() {
+  return browser.storage.local.get(defaultRpcParams)
+}
+
+export function rpcParamsAreSet() {
+  return browser.storage.local.get(defaultRpcParams).then(rpcParams => {
+    if (
+      rpcParams.username !== '' &&
+      rpcParams.password !== '' &&
+      rpcParams.endpoint !== ''
+    ) {
+      return true
+    }
+
+    return false
+  })
+}
+
+export function rpcCall(method, params = []) {
+  return getRpcParams().then(({endpoint, username, password}) => {
+    let accessKey = createHmac('sha256', `${username}:${password}`)
+      .update('access-key')
+      .digest('base64')
+      .replace(/\W+/g, '')
+
+    return fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-Requested-With': 'kwh-extension',
+        'X-Access': accessKey
+      },
+      body: JSON.stringify({method, params})
+    }).then(r => r.json())
+  })
 }
 
 export function msatsFormat(msatoshis) {

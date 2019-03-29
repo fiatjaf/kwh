@@ -5,7 +5,7 @@ import browser from 'webextension-polyfill'
 const Keysim = require('keysim')
 
 import {PROMPT_PAYMENT, REQUEST_GETINFO} from './constants'
-import {getOriginData, sprint} from './utils'
+import {getOriginData, rpcParamsAreSet, sprint} from './utils'
 
 if (document) {
   // intercept any `lightning:` links
@@ -88,7 +88,7 @@ if (document) {
   ;(document.head || document.documentElement).appendChild(script)
 
   // communicate with webln
-  var _blocked = null
+  var _blocked = null // blocked status cache
   window.addEventListener('message', ev => {
     // only accept messages from the current window
     if (ev.source !== window) return
@@ -107,17 +107,22 @@ if (document) {
       .then(() => {
         if (ev.data.getBlocked) {
           // return blocked status for this site
-          if (_blocked !== null) return _blocked
+          if (_blocked !== null) return _blocked // cached
 
-          return browser.runtime
-            .sendMessage({
-              getBlocked: true,
-              domain: origin.domain
-            })
-            .then(blocked => {
-              _blocked = blocked
-              return blocked
-            })
+          // it's always blocked if the user has no options
+          return rpcParamsAreSet().then(ok => {
+            if (!ok) throw new Error('Lightning RPC params are not set.')
+
+            return browser.runtime
+              .sendMessage({
+                getBlocked: true,
+                domain: origin.domain
+              })
+              .then(blocked => {
+                _blocked = blocked
+                return blocked
+              })
+          })
         } else {
           // default: an action or prompt
           console.log(`[KwH]: ${type} ${sprint(extra)} ${sprint(origin)}`)
@@ -151,7 +156,11 @@ if (document) {
       })
       .catch(err => {
         window.postMessage(
-          {response: true, application: 'KwH', error: err},
+          {
+            response: true,
+            application: 'KwH',
+            error: err ? err.message || err : err
+          },
           '*'
         )
       })

@@ -15,13 +15,19 @@ import {
 import Home from './components/Home'
 import Payment from './components/Payment'
 import Invoice from './components/Invoice'
-import {sprint} from './utils'
+import {RPCParams} from './options'
+import {sprint, rpcParamsAreSet} from './utils'
 
 export const CurrentContext = React.createContext({action: null, tab: null})
 
 function App() {
   let [currentAction, setAction] = useState(null)
   let [proxiedTab, setProxiedTab] = useState(null)
+  let [missingRpcParams, setMissingRpcParams] = useState(null)
+
+  useEffect(() => {
+    rpcParamsAreSet().then(ok => setMissingRpcParams(!ok))
+  }, [])
 
   useEffect(() => {
     // when this page is rendered, query the current action
@@ -82,40 +88,50 @@ function App() {
 
   return (
     <main className="bg-washed-green pb4 pr1 pl1 black-70 sans-serif">
-      <nav className="pa1 flex justify-between">
-        <a
-          className={
-            navItemClasses + (selectedMenu === HOME ? activeNavItemClasses : '')
-          }
-          data-action={HOME}
-          onClick={navigate}
-        >
-          Home
-        </a>
-        <a
-          className={
-            navItemClasses +
-            (selectedMenu === MAKE_INVOICE ? activeNavItemClasses : '')
-          }
-          data-action={MAKE_INVOICE}
-          onClick={navigate}
-        >
-          Invoice
-        </a>
-        <a
-          className={
-            navItemClasses +
-            (selectedMenu === MAKE_PAYMENT ? activeNavItemClasses : '')
-          }
-          data-action={MAKE_PAYMENT}
-          onClick={navigate}
-        >
-          Pay
-        </a>
-      </nav>
-      <CurrentContext.Provider value={{tab: proxiedTab, action: currentAction}}>
-        <div className="w6">{page}</div>
-      </CurrentContext.Provider>
+      {missingRpcParams ? (
+        <RPCParams />
+      ) : (
+        <>
+          {' '}
+          <nav className="pa1 flex justify-between">
+            <a
+              className={
+                navItemClasses +
+                (selectedMenu === HOME ? activeNavItemClasses : '')
+              }
+              data-action={HOME}
+              onClick={navigate}
+            >
+              Home
+            </a>
+            <a
+              className={
+                navItemClasses +
+                (selectedMenu === MAKE_INVOICE ? activeNavItemClasses : '')
+              }
+              data-action={MAKE_INVOICE}
+              onClick={navigate}
+            >
+              Invoice
+            </a>
+            <a
+              className={
+                navItemClasses +
+                (selectedMenu === MAKE_PAYMENT ? activeNavItemClasses : '')
+              }
+              data-action={MAKE_PAYMENT}
+              onClick={navigate}
+            >
+              Pay
+            </a>
+          </nav>
+          <CurrentContext.Provider
+            value={{tab: proxiedTab, action: currentAction}}
+          >
+            <div className="w6">{page}</div>
+          </CurrentContext.Provider>{' '}
+        </>
+      )}
     </main>
   )
 }

@@ -11,7 +11,7 @@ class WebLNProvider {
   enable() {
     return this._sendMessage({getBlocked: true}).then(blocked => {
       if (blocked) {
-        throw new Error('webln acess is blocked on this page.')
+        throw new Error('webln acess is blocked on this domain.')
       }
 
       return true
@@ -69,7 +69,7 @@ class WebLNProvider {
         }
 
         if (ev.data.error) {
-          reject(ev.data.error)
+          reject(new Error(ev.data.error))
         } else {
           resolve(ev.data.data)
         }
