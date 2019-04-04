@@ -1,7 +1,7 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
-import {HOME, PROMPT_PAYMENT, PROMPT_INVOICE, PROMPT_ENABLE} from './constants'
+import {HOME, PROMPT_PAYMENT, PROMPT_INVOICE} from './constants'
 
 const blankAction = {type: HOME}
 
@@ -18,8 +18,7 @@ export function get(tabId) {
 export function set(tabId, action) {
   if (
     action.type === PROMPT_PAYMENT ||
-    action.type === PROMPT_INVOICE ||
-    action.type === PROMPT_ENABLE
+    action.type === PROMPT_INVOICE
   ) {
     emphasizeBrowserAction(tabId, action.type)
   } else {
@@ -41,7 +40,6 @@ export function set(tabId, action) {
 export const prompt_defs = {
   PROMPT_PAYMENT: ['pay', '#d5008f'],
   PROMPT_INVOICE: ['req', '#357edd'],
-  PROMPT_ENABLE: ['auth', '#19a974']
 }
 
 export function emphasizeBrowserAction(tabId, type) {

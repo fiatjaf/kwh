@@ -1,11 +1,6 @@
 /** @format */
 
-import {
-  PROMPT_ENABLE,
-  PROMPT_PAYMENT,
-  PROMPT_INVOICE,
-  REQUEST_GETINFO
-} from './constants'
+import {PROMPT_PAYMENT, PROMPT_INVOICE, REQUEST_GETINFO} from './constants'
 
 class WebLNProvider {
   enable() {
