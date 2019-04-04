@@ -27,10 +27,13 @@ static/options-bundle.js: src/options.js src/utils.js
 static/style.css: src/style.styl
 	./node_modules/.bin/stylus < $< > $@
 
-pack.zip: build
+extension.zip: build
 	cd static/ && \
-        zip -r pack * && \
-        mv pack.zip ../
+        for file in $$(ls *.js); \
+          do ../node_modules/.bin/terser $$file --compress --mangle | sponge $$file; \
+        done; \
+        zip -r extension * && \
+        mv extension.zip ../
 
 sources.zip: build
 	rm -fr tmpsrc/
