@@ -52,7 +52,10 @@ export default function Payment() {
         tab,
         rpc: true,
         method: 'pay',
-        params: {bolt11, msatoshi: satoshiActual || undefined},
+        params: {
+          bolt11,
+          msatoshi: satoshiActual ? satoshiActual * 1000 : undefined
+        },
         behaviors: {
           success: [
             'notify-payment-success',
