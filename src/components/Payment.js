@@ -16,6 +16,8 @@ export default function Payment() {
   let [invoiceData, setInvoiceData] = useState(null)
   let [satoshiActual, setSatoshiActual] = useState(0)
 
+  let [iconShown, showIcon] = useState(false)
+
   useEffect(
     () => {
       if (bolt11 === '' || doneTyping === false || paymentPending) return
@@ -29,6 +31,10 @@ export default function Payment() {
     },
     [bolt11, doneTyping]
   )
+
+  function handleIconLoaded() {
+    showIcon(true)
+  }
 
   function typedInvoice(e) {
     e.preventDefault()
@@ -114,11 +120,16 @@ export default function Payment() {
   return (
     <div className="lh-copy wrap tj measure w5 pa2">
       {action.origin && (
-        <div className="flex justify-center pb2">
+        <div className="flex items-center content-center justify-center pb2">
           <div className="ma1 f7">
             Sending a payment on <span className="b">{action.origin.name}</span>
           </div>
-          <img src={action.origin.icon || ''} className="ma1 h3" />
+          <img
+            src={action.origin.icon}
+            className="ma1 h3"
+            onLoad={handleIconLoaded}
+            style={{display: iconShown ? 'block' : 'none'}}
+          />
         </div>
       )}
       {invoiceData && (
