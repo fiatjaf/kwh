@@ -50,7 +50,7 @@ const behaviors = {
   'return-invoice': ({bolt11}, [_, promise]) => {
     if (promise) promise.resolve(bolt11)
   },
-  'wait-for-invoice': ({bolt11}, _, __, extra) => {
+  'wait-for-invoice': ({bolt11}, _, tabId, extra) => {
     rpcCall('waitinvoice', [extra.newInvoiceLabel])
       .then(({status, msatoshi, description}) => {
         if (status === 'paid') {
@@ -65,6 +65,9 @@ const behaviors = {
             invoicePaid: true,
             bolt11
           })
+          setTimeout(() => {
+            behaviors['navigate-home'](null, null, tabId)
+          }, 5000)
         }
       })
       .catch(() => {})
