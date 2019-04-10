@@ -13,11 +13,15 @@
 
 - Browse balance and latest transactions;
 - [`webln`](https://webln.dev/#/) support;
-- Pay highlighted invoice with a context menu item;
+- Pay highlighted invoice with a context menu click;
 - Handle `lightning:` links;
 - [“Generate invoice here”](https://youtu.be/wzkxxz5FsJo) context menu;
 - Manual payments and invoice creation;
 - No popups, all interactions happen in the browserAction.
+
+<p align="center">
+  <img src="screenshots/withdraw-checkmark-tippin.gif" width="400" />
+</p>
 
 ### Requirements
 
@@ -34,4 +38,4 @@ make extension.zip
 
 ---
 
-<div>Icons made by <a href="https://www.flaticon.com/authors/smalllikeart" title="smalllikeart">smalllikeart</a> from <a href="https://www.flaticon.com/"               title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/"              title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+<div>Icons made by <a href="https://www.flaticon.com/authors/smalllikeart" title="smalllikeart">smalllikeart</a> from <a href="https://www.flaticon.com/" title="Flaticon">Flaticon</a> and licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>.</div>
