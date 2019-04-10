@@ -61,6 +61,10 @@ const behaviors = {
             )} invoice ("${description}") was paid!`,
             iconUrl: '/icon64-active.png'
           })
+          browser.runtime.sendMessage({
+            invoicePaid: true,
+            bolt11
+          })
         }
       })
       .catch(() => {})
