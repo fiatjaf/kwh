@@ -60,7 +60,8 @@ export default function Payment() {
         method: 'pay',
         params: {
           bolt11,
-          msatoshi: satoshiActual ? satoshiActual * 1000 : undefined
+          msatoshi: satoshiActual ? satoshiActual * 1000 : undefined,
+          label: invoiceData.description
         },
         behaviors: {
           success: [
