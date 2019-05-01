@@ -1,10 +1,16 @@
 /** @format */
 
+import {getRpcParams} from '../utils'
+
+const fetch = window.fetch
+const WebSocket = window.WebSocket
+const FormData = window.FormData
+
 export function summary() {
   return Promise.all([
     rpcCall('getinfo').then(
       ({nodeId, alias, blockHeight, publicAddresses}) => ({
-        blockheight: blockheight,
+        blockheight: blockHeight,
         id: nodeId,
         alias,
         address: publicAddresses.length === 0 ? null : publicAddresses[0]
@@ -117,7 +123,7 @@ export function listenForEvents(defaultCallback) {
     }
 
     ws.onerror = ev => {
-      console.log('error on websocket', err)
+      console.log('error on websocket', ev)
       listenForEvents(defaultCallback)
     }
   })

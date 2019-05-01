@@ -16,10 +16,7 @@ export function get(tabId) {
 }
 
 export function set(tabId, action) {
-  if (
-    action.type === PROMPT_PAYMENT ||
-    action.type === PROMPT_INVOICE
-  ) {
+  if (action.type === PROMPT_PAYMENT || action.type === PROMPT_INVOICE) {
     emphasizeBrowserAction(tabId, action.type)
   } else {
     cleanupBrowserAction(tabId)
@@ -39,7 +36,7 @@ export function set(tabId, action) {
 
 export const prompt_defs = {
   PROMPT_PAYMENT: ['pay', '#d5008f'],
-  PROMPT_INVOICE: ['req', '#357edd'],
+  PROMPT_INVOICE: ['req', '#357edd']
 }
 
 export function emphasizeBrowserAction(tabId, type) {

@@ -3,7 +3,6 @@
 import browser from 'webextension-polyfill'
 import React, {useState, useEffect, useContext, useRef} from 'react' // eslint-disable-line
 import ContentEditable from 'react-contenteditable'
-import cuid from 'cuid'
 
 import {CurrentContext} from '../popup'
 import ShowInvoice from './ShowInvoice'

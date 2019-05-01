@@ -1,9 +1,6 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
-import createHmac from 'create-hmac'
-
-const fetch = window.fetch
 
 export function getOriginData() {
   return {

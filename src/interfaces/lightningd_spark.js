@@ -1,8 +1,12 @@
 /** @format */
 
 import cuid from 'cuid'
+import createHmac from 'create-hmac'
 
 import {getRpcParams} from '../utils'
+
+const fetch = window.fetch
+const EventSource = window.EventSource
 
 export function summary() {
   return Promise.all([
@@ -15,11 +19,11 @@ export function summary() {
     rpcCall('listfunds').then(({channels}) => {
       return channels.reduce((acc, ch) => acc + ch.channel_sat, 0)
     }),
-    rpcCall('listinvoices').then(({channels}) => {
-      return resp.invoices.filter(inv => inv.status === 'paid')
+    rpcCall('listinvoices').then(({invoices}) => {
+      return invoices.filter(inv => inv.status === 'paid')
     }),
-    rpcCall('listpayments').then(resp => {
-      return resp.payments.filter(pay => pay.status === 'complete')
+    rpcCall('listpayments').then(({payments}) => {
+      return payments.filter(pay => pay.status === 'complete')
     })
   ]).then(([info, balance, invoices, payments]) => {
     let transactions = invoices
@@ -77,6 +81,8 @@ export function makeInvoice(msatoshi = 'any', description, label = undefined) {
     ({bolt11, payment_hash}) => ({bolt11, hash: payment_hash})
   )
 }
+
+var eventCallbacks = {}
 
 export function listenForEvents(defaultCallback) {
   return getRpcParams().then(({endpoint, username, password}) => {

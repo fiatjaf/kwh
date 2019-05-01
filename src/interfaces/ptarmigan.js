@@ -1,5 +1,9 @@
 /** @format */
 
+import {getRpcParams} from '../utils'
+
+const fetch = window.fetch
+
 export function summary() {
   return Promise.all([
     rpcCall('getinfo'),

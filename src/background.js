@@ -189,8 +189,6 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
         break
       case MENUITEM_BLOCK:
         browser.tabs.query({active: true}).then(tabs => {
-          let tab = tabs[0]
-
           browser.storage.local
             .get('blocked')
             .then(({blocked}) => {
