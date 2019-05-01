@@ -50,7 +50,9 @@ export function summary() {
   })
 }
 
-export function pay(bolt11, msatoshi = undefined, description = undefined) {
+export function pay(bolt11, msatoshi, description = 'unnamed kWh invoice') {
+  if (!msatoshi) msatoshi = undefined
+
   return rpcCall('pay', {
     bolt11,
     msatoshi,
@@ -82,8 +84,6 @@ export function makeInvoice(msatoshi = 'any', description, label = undefined) {
   )
 }
 
-var eventCallbacks = {}
-
 export function listenForEvents(defaultCallback) {
   return getRpcParams().then(({endpoint, username, password}) => {
     const es = new EventSource(
@@ -91,33 +91,28 @@ export function listenForEvents(defaultCallback) {
         '/stream?access-key=' +
         makeAccessKey(username, password)
     )
-    es.onmessage = ev => {
-      console.log('got message', ev, ev.data)
-
-      var event
-
+    es.addEventListener('inv-paid', ev => {
       try {
-        event = JSON.parse(ev.data)
+        let {description, msatoshi_received, payment_hash} = JSON.parse(ev.data)
+
+        // here we send normalized data, not the raw event
+        defaultCallback('payment-received', {
+          amount: msatoshi_received,
+          description,
+          hash: payment_hash
+        })
       } catch (e) {
-        console.log('failed to parse websocket event', ev)
+        console.log('failed to parse inv-paid event', ev)
         return
       }
-
-      // specific callbacks registered for this event
-      if (eventCallbacks[event.id]) {
-        eventCallbacks[event.id](event)
-      }
-
-      // here we send normalized data, not the raw event
-      switch (event.type) {
-        case 'payment-received':
-          defaultCallback({})
-      }
-    }
+    })
 
     es.onerror = err => {
       console.log('error on eventsource', err)
-      listenForEvents(defaultCallback)
+    }
+
+    es.onclose = ev => {
+      console.log('eventsource closed', ev)
     }
   })
 }

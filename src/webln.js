@@ -56,10 +56,10 @@ class WebLNProvider {
 
   _sendMessage(message) {
     return new Promise((resolve, reject) => {
-      window.postMessage({...message, application: 'KwH'}, '*')
+      window.postMessage({...message, application: 'kWh'}, '*')
 
       function handleWindowMessage(ev) {
-        if (!ev.data || ev.data.application !== 'KwH' || !ev.data.response) {
+        if (!ev.data || ev.data.application !== 'kWh' || !ev.data.response) {
           return
         }
 

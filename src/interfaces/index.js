@@ -15,6 +15,7 @@ export function handleRPC(rpcField = {}) {
   return getRpcParams().then(({kind}) => {
     for (let method in rpcField) {
       let args = rpcField[method]
+      console.log(kind, method, args)
       return kinds[kind][method].apply(null, args)
     }
   })

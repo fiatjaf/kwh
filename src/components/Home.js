@@ -10,7 +10,7 @@ import {msatsFormat} from '../utils'
 export default function Home() {
   let {tab} = useContext(CurrentContext)
 
-  let [summary, setSummary] = useState({})
+  let [summary, setSummary] = useState({info: {}})
   let [blocked, setBlocked] = useState({})
 
   useEffect(() => {
@@ -32,12 +32,12 @@ export default function Home() {
   return (
     <div>
       <h1 className="f6 ma3 tc">Balance</h1>
-      <div className="f5 tc dark-pink b">{summary.balance} satoshi</div>
+      <div className="f5 tc dark-pink b">{summary.balance || '~'} satoshi</div>
       <h1 className="f6 ma3 tc">Latest transactions</h1>
       <div className="flex justify-center">
         <table className="f">
           <tbody>
-            {summary.transactions.map((tx, i) => (
+            {(summary.transactions || []).map((tx, i) => (
               <tr key={i} className="bg-light-yellow hover-bg-light-pink">
                 <td className="pa1 f7">{formatDate(tx.date)}</td>
                 <td
@@ -59,7 +59,7 @@ export default function Home() {
       </div>
       <h1 className="f6 ma3 tc">Node</h1>
       <div
-        style={{border: `5px solid #${summary.info.color}`}}
+        style={{border: `5px solid #${summary.info.color || 'ffffff'}`}}
         className="pa1 ma2"
       >
         <table>

@@ -9,7 +9,7 @@ static/icon%.png: icon.png
 static/icon%-active.png: icon-active.png
 	convert $< -resize $*x$* $@
 
-static/background-bundle.js: src/background.js src/predefined-behaviors.js src/current-action.js src/utils.js
+static/background-bundle.js: src/background.js src/predefined-behaviors.js src/current-action.js src/utils.js src/interfaces/index.js src/interfaces/lightningd_spark.js src/interfaces/eclair.js src/interfaces/ptarmigan.js
 	./node_modules/.bin/browserifyinc $< -dv --outfile $@
 
 static/content-bundle.js: src/content.js src/utils.js

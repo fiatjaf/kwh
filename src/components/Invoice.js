@@ -19,13 +19,14 @@ export default function Invoice() {
   let [invoiceData, setInvoiceData] = useState(action.invoiceData)
   let [satoshis, setSatoshis] = useState(action.amount || defaultAmount)
   let [desc, setDesc] = useState(
-    action.defaultMemo || (action.origin ? action.origin.domain : `KwH invoice`)
+    action.defaultMemo ||
+      (action.origin ? action.origin.domain : `kWh invoice`)
   )
   let [invoicePaid, setInvoicePaid] = useState(false)
 
   useEffect(
     () => {
-      if (!invoiceData.bolt11) return
+      if (!invoiceData) return
 
       browser.runtime.onMessage.addListener(handleMessage)
       return () => {

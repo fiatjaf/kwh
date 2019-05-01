@@ -45,7 +45,7 @@ export function RPCParams() {
       <header className="measure-narrow tc">
         <h1 className="f6 ma3 tc">Spark server credentials</h1>
         <p className="f7 ma0 mb2 dark-pink">
-          KwH uses the{' '}
+          kWh uses the{' '}
           <a href="https://github.com/shesek/spark-wallet">Spark Wallet</a> RPC
           endpoint to communicate with your lightningd node.
         </p>
