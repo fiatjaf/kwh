@@ -53,7 +53,7 @@ export function decode(bolt11) {
 
 export function makeInvoice(msatoshi, description) {
   return rpcCall('createinvoice', {amountMsat: msatoshi}).then(
-    ({bolt11}) => bolt11
+    ({bolt11, hash}) => ({bolt11, hash})
   )
 }
 

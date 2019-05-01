@@ -17,7 +17,7 @@ export default function Invoice() {
     action.defaultAmount || action.maximumAmount || action.minimumAmount || 100
   let amountFixed = !!action.amount
 
-  let [bolt11, setBolt11] = useState(action.invoice)
+  let [invoiceData, setInvoiceData] = useState(action.invoiceData)
   let [satoshis, setSatoshis] = useState(action.amount || defaultAmount)
   let [desc, setDesc] = useState(
     action.defaultMemo || (action.origin ? action.origin.domain : `KwH invoice`)
@@ -26,7 +26,7 @@ export default function Invoice() {
 
   useEffect(
     () => {
-      if (!bolt11) return
+      if (!invoiceData.bolt11) return
 
       browser.runtime.onMessage.addListener(handleMessage)
       return () => {
@@ -34,12 +34,19 @@ export default function Invoice() {
       }
 
       function handleMessage(message) {
-        if (message.invoicePaid && message.bolt11 === bolt11) {
+        if (message.invoicePaid && message.hash === invoiceData.hash) {
           setInvoicePaid(true)
+          setTimeout(() => {
+            browser.runtime.sendMessage({
+              tab,
+              triggerBehaviors: true,
+              behaviors: ['navigate-home']
+            })
+          }, 4900)
         }
       }
     },
-    [bolt11]
+    [invoiceData]
   )
 
   function makeInvoice(e) {
@@ -61,8 +68,8 @@ export default function Invoice() {
           failure: ['notify-invoice-error', 'cleanup-browser-action']
         }
       })
-      .then(({bolt11}) => {
-        setBolt11(bolt11)
+      .then(invoiceData => {
+        setInvoiceData(invoiceData)
       })
   }
 
@@ -70,7 +77,7 @@ export default function Invoice() {
 
   return (
     <div className="lh-copy wrap tl measure w5 pa2">
-      {bolt11 ? (
+      {invoiceData ? (
         invoicePaid ? (
           <div className="flex justify-center items-center content-center pb6 pt6">
             <svg
@@ -93,7 +100,7 @@ export default function Invoice() {
             </svg>
           </div>
         ) : (
-          <ShowInvoice invoice={bolt11} />
+          <ShowInvoice invoice={invoiceData.bolt11} />
         )
       ) : (
         <form onSubmit={makeInvoice}>

@@ -11,11 +11,17 @@ const kinds = {
   ptarmigan
 }
 
-export default function handleRPC(rpcField = {}) {
+export function handleRPC(rpcField = {}) {
   return getRpcParams().then(({kind}) => {
     for (let method in rpcField) {
       let args = rpcField[method]
       return kinds[kind][method].apply(null, args)
     }
+  })
+}
+
+export function listenForEvents(callback) {
+  return getRpcParams().then(({kind}) => {
+    kinds[kind].listenForEvents(callback)
   })
 }

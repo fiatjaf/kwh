@@ -5,7 +5,6 @@ import browser from 'webextension-polyfill'
 import {HOME} from './constants'
 import {set, cleanupBrowserAction} from './current-action'
 import {msatsFormat, notify} from './utils'
-import handleRPC from './interfaces'
 
 const behaviors = {
   'navigate-home': (_, __, tabId) => {
@@ -36,7 +35,7 @@ const behaviors = {
       title: 'Payment error'
     })
   },
-  'paste-invoice': (bolt11, [{pasteOn}]) => {
+  'paste-invoice': ({bolt11}, [{pasteOn}]) => {
     if (pasteOn) {
       browser.tabs.sendMessage(pasteOn[0], {
         paste: true,
@@ -45,33 +44,11 @@ const behaviors = {
       })
     }
   },
-  'save-invoice-to-current-action': (bolt11, [action, _], tabId) => {
-    set(tabId, {...action, invoice: bolt11})
+  'save-invoice-to-current-action': (invoiceData, [action, _], tabId) => {
+    set(tabId, {...action, invoiceData})
   },
-  'return-invoice': (bolt11, [_, promise]) => {
-    if (promise) promise.resolve(bolt11)
-  },
-  'wait-for-invoice': ({bolt11}, _, tabId, extra) => {
-    handleRPC({invoiceWait: [extra.newInvoiceLabel]})
-      .then(({status, msatoshi, description}) => {
-        if (status === 'paid') {
-          notify({
-            title: 'Got payment',
-            message: `Your ${msatsFormat(
-              msatoshi
-            )} invoice ("${description}") was paid!`,
-            iconUrl: '/icon64-active.png'
-          })
-          browser.runtime.sendMessage({
-            invoicePaid: true,
-            bolt11
-          })
-          setTimeout(() => {
-            behaviors['navigate-home'](null, null, tabId)
-          }, 5000)
-        }
-      })
-      .catch(() => {})
+  'return-invoice': (invoiceData, [_, promise]) => {
+    if (promise) promise.resolve(invoiceData)
   },
   'notify-invoice-error': (e, _) => {
     notify({

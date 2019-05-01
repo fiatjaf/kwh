@@ -11,8 +11,8 @@ import {
 } from './constants'
 import {sprint, msatsFormat, notify} from './utils'
 import {getBehavior} from './predefined-behaviors'
+import {handleRPC, listenForEvents} from './interfaces'
 import * as current from './current-action'
-import handleRPC from './interfaces'
 
 // logger service
 browser.runtime.onMessage.addListener((message, sender) => {
@@ -73,6 +73,28 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
   }
 
   return promise
+})
+
+// start listening for events from the node
+listenForEvents((type, data) => {
+  switch (type) {
+    case 'payment-received':
+      let {amount, description, hash} = data
+      notify({
+        title: 'Got payment',
+        message: `Your ${msatsFormat(
+          amount
+        )} invoice ("${description}") was paid!`,
+        iconUrl: '/icon64-active.png'
+      })
+      browser.runtime.sendMessage({
+        invoicePaid: true,
+        hash
+      })
+      break
+    case 'payment-failed':
+      break
+  }
 })
 
 // do an rpc call on behalf of anyone who wants that -- normally the popup
@@ -145,6 +167,7 @@ browser.contextMenus.create({
   contexts: ['browser_action']
 })
 
+// listen to context menu clicks
 browser.contextMenus.onClicked.addListener((info, tab) => {
   browser.tabs.sendMessage(tab.id, {getOrigin: true}).then(origin => {
     switch (info.menuItemId) {
@@ -194,6 +217,7 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
   })
 })
 
+// listen to page events
 var invoiceToPay = ''
 var invoiceDefaultValue = 100
 

@@ -74,7 +74,7 @@ export function decode(bolt11) {
 export function makeInvoice(msatoshi = 'any', description, label = undefined) {
   if (!label) label = `kWh.${cuid.slug()}`
   return rpcCall('invoice', {msatoshi, label, description}).then(
-    ({bolt11}) => bolt11
+    ({bolt11, payment_hash}) => ({bolt11, hash: payment_hash})
   )
 }
 

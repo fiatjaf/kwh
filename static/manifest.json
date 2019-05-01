@@ -9,7 +9,7 @@
   "manifest_version": 2,
   "name": "kWh",
   "description": "Make lightning payments in the browser with c-lightning",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "author": "fiatjaf",
   "icons": {
     "16": "icon16.png",
