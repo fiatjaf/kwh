@@ -36,7 +36,7 @@ class WebLNProvider {
       if (typeof args !== 'object') {
         args = {amount: args}
       }
-      return this._prompt(PROMPT_INVOICE, args).then(bolt11 => ({
+      return this._prompt(PROMPT_INVOICE, args).then(({bolt11}) => ({
         paymentRequest: bolt11
       }))
     })
