@@ -86,7 +86,7 @@ export function rpcParamsAreSet() {
   })
 }
 
-export function msatsFormat(msatoshis) {
+export function formatmsat(msatoshis) {
   if (Math.abs(msatoshis) < 1000) {
     return `${msatoshis} msat`
   }

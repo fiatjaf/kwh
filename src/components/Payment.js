@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
 
 import {CurrentContext} from '../popup'
-import {msatsFormat, abbreviate} from '../utils'
+import {formatmsat, abbreviate} from '../utils'
 
 export default function Payment() {
   let {action, tab} = useContext(CurrentContext)
@@ -138,7 +138,7 @@ export default function Payment() {
           Pay{' '}
           {invoiceData.msatoshi ? (
             <span className={valueClasses}>
-              {msatsFormat(invoiceData.msatoshi)}
+              {formatmsat(invoiceData.msatoshi)}
             </span>
           ) : (
             <input

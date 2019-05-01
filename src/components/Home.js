@@ -5,7 +5,7 @@ import React, {useState, useEffect, useContext} from 'react' // eslint-disable-l
 import friendlyTime from 'friendly-time'
 
 import {CurrentContext} from '../popup'
-import {msatsFormat} from '../utils'
+import {formatmsat} from '../utils'
 
 export default function Home() {
   let {tab} = useContext(CurrentContext)
@@ -46,11 +46,11 @@ export default function Home() {
                   }
                   title={
                     tx.fees !== undefined
-                      ? `+ ${msatsFormat(tx.fees)} (fees)`
+                      ? `+ ${formatmsat(tx.fees)} (fees)`
                       : null
                   }
                 >
-                  {msatsFormat(tx.amount)}
+                  {formatmsat(tx.amount)}
                 </td>
                 <td className="pa1 f7" title={tx.description}>
                   {tx.description.length > 17

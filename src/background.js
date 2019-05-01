@@ -9,7 +9,7 @@ import {
   MENUITEM_BLOCK,
   MENUITEM_GENERATE
 } from './constants'
-import {sprint, msatsFormat, notify, abbreviate} from './utils'
+import {sprint, formatmsat, notify, abbreviate} from './utils'
 import {getBehavior} from './predefined-behaviors'
 import {handleRPC, listenForEvents} from './interfaces'
 import * as current from './current-action'
@@ -59,7 +59,7 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
         [PROMPT_INVOICE]: [
           'Make an invoice',
           `'${action.origin.name}' needs an invoice${
-            action.amount ? `for ${msatsFormat(action.amount * 1000)}` : ''
+            action.amount ? `for ${formatmsat(action.amount * 1000)}` : ''
           }.`
         ]
       }[action.type]
@@ -82,7 +82,7 @@ listenForEvents((type, data) => {
       let {amount, description, hash} = data
       notify({
         title: 'Got payment',
-        message: `Your ${msatsFormat(amount)} invoice (${
+        message: `Your ${formatmsat(amount)} invoice (${
           description ? `"${description}"` : abbreviate(hash)
         }) was paid!`,
         iconUrl: '/icon64-active.png'
@@ -232,7 +232,7 @@ browser.runtime.onMessage.addListener(({contextMenu, text}) => {
   invoiceDefaultValue = parseInt(text.trim())
   if (!isNaN(invoiceDefaultValue)) {
     browser.contextMenus.update(MENUITEM_GENERATE, {
-      title: `Generate ${msatsFormat(invoiceDefaultValue * 1000)} invoice here`
+      title: `Generate ${formatmsat(invoiceDefaultValue * 1000)} invoice here`
     })
   } else {
     browser.contextMenus.update(MENUITEM_GENERATE, {
