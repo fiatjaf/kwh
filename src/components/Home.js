@@ -44,6 +44,11 @@ export default function Home() {
                   className={
                     'code tr pa1 f7 ' + (tx.amount < 0 ? 'dark-pink' : 'green')
                   }
+                  title={
+                    tx.fees !== undefined
+                      ? `+ ${msatsFormat(tx.fees)} (fees)`
+                      : null
+                  }
                 >
                   {msatsFormat(tx.amount)}
                 </td>

@@ -18,6 +18,7 @@ export function summary() {
     ),
     rpcCall('listpendinginvoices'),
     rpcCall('listinvoices'),
+    rpcCall('audit').then(({sent}) => sent),
     rpcCall('channels').then(
       channels =>
         channels.reduce(
@@ -25,8 +26,8 @@ export function summary() {
           0
         ) / 1000
     )
-  ]).then(([info, pendingInvoices, allInvoices, balance]) => {
-    let received = allInvoices
+  ]).then(([info, pendingInvoices, allInvoices, payments, balance]) => {
+    let invoices = allInvoices
       .filter(inv => {
         for (let i = 0; i < pendingInvoices.length; i++) {
           let pinv = pendingInvoices[i]
@@ -37,15 +38,26 @@ export function summary() {
         return true
       })
       .slice(0, 15)
+      .map(({amount, timestamp, description}) => ({
+        amount,
+        description,
+        date: timestamp
+      }))
+
+    payments = payments.map(({amount, feesPaid, paymentHash, timestamp}) => ({
+      date: timestamp / 1000,
+      amount: -amount,
+      description: paymentHash,
+      fees: feesPaid
+    }))
 
     return {
       info,
       balance,
-      transactions: received.map(({timestamp, amount, description}) => ({
-        date: timestamp,
-        amount,
-        description
-      }))
+      transactions: invoices
+        .concat(payments)
+        .sort((a, b) => b.date - a.date)
+        .slice(0, 15)
     }
   })
 }

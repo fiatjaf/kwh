@@ -23,11 +23,15 @@ export function summary() {
         id: node_id
       },
       balance: total_local_msat / 1000,
-      transactions: payments.map((pmt, i) => ({
-        date: decodedpayments[i].creation,
-        amount: -(pmt.additional_amount_msat + decodedpayments[i].msatoshi),
-        description: decodedpayments[i].description
-      }))
+      transactions: payments
+        .map((pmt, i) => ({
+          date: decodedpayments[i].creation,
+          amount: -decodedpayments[i].msatoshi,
+          fees: pmt.additional_amount_msat,
+          description: decodedpayments[i].description
+        }))
+        .sort((a, b) => b.date - a.date)
+        .slice(0, 15)
     }))
 }
 

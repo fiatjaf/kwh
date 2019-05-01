@@ -35,16 +35,24 @@ export function summary() {
       .slice(-15)
       .concat(
         payments
-          .map(({created_at, msatoshi, description, payment_preimage}) => ({
-            date: created_at,
-            amount: -msatoshi,
-            description: description || payment_preimage
-          }))
+          .map(
+            ({
+              created_at,
+              msatoshi,
+              msatoshi_sent,
+              description,
+              payment_preimage
+            }) => ({
+              date: created_at,
+              amount: -msatoshi,
+              description: description || payment_preimage,
+              fees: msatoshi_sent - msatoshi
+            })
+          )
           .slice(-15)
       )
-      .sort((a, b) => a.date - b.date)
-      .slice(-15)
-      .reverse()
+      .sort((a, b) => b.date - a.date)
+      .slice(0, 15)
 
     return {info, balance, transactions}
   })
