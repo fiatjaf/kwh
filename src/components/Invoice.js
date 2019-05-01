@@ -19,8 +19,7 @@ export default function Invoice() {
   let [invoiceData, setInvoiceData] = useState(action.invoiceData)
   let [satoshis, setSatoshis] = useState(action.amount || defaultAmount)
   let [desc, setDesc] = useState(
-    action.defaultMemo ||
-      (action.origin ? action.origin.domain : `kWh invoice`)
+    action.defaultMemo || (action.origin ? action.origin.domain : `kWh invoice`)
   )
   let [invoicePaid, setInvoicePaid] = useState(false)
 
@@ -81,19 +80,19 @@ export default function Invoice() {
         invoicePaid ? (
           <div className="flex justify-center items-center content-center pb6 pt6">
             <svg
-              class="checkmark"
+              className="checkmark"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 52 52"
             >
               <circle
-                class="checkmark__circle"
+                className="checkmark__circle"
                 cx="26"
                 cy="26"
                 r="25"
                 fill="none"
               />
               <path
-                class="checkmark__check"
+                className="checkmark__check"
                 fill="none"
                 d="M14.1 27.2l7.1 7.2 16.7-16.8"
               />
