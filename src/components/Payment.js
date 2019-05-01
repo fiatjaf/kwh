@@ -23,7 +23,7 @@ export default function Payment() {
       if (bolt11 === '' || doneTyping === false || paymentPending) return
 
       browser.runtime
-        .sendMessage({tab, rpc: true, method: 'decodepay', params: [bolt11]})
+        .sendMessage({tab, rpc: {decode: [bolt11]}})
         .then(data => {
           setInvoiceData(data)
         })
@@ -56,12 +56,12 @@ export default function Payment() {
     browser.runtime
       .sendMessage({
         tab,
-        rpc: true,
-        method: 'pay',
-        params: {
-          bolt11,
-          msatoshi: satoshiActual ? satoshiActual * 1000 : undefined,
-          label: invoiceData.description
+        rpc: {
+          pay: [
+            bolt11,
+            satoshiActual ? satoshiActual * 1000 : undefined,
+            invoiceData.description
+          ]
         },
         behaviors: {
           success: [
@@ -152,7 +152,7 @@ export default function Payment() {
           )}{' '}
           to{' '}
           <span className="dark-pink hover-gold code b f6">
-            {invoiceData.payee.slice(0, 4)}…{invoiceData.payee.slice(-4)}
+            {invoiceData.nodeid.slice(0, 4)}…{invoiceData.nodeid.slice(-4)}
           </span>
           {invoiceData.description ? (
             <>

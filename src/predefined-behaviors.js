@@ -4,7 +4,8 @@ import browser from 'webextension-polyfill'
 
 import {HOME} from './constants'
 import {set, cleanupBrowserAction} from './current-action'
-import {rpcCall, msatsFormat, notify} from './utils'
+import {msatsFormat, notify} from './utils'
+import handleRPC from './interfaces'
 
 const behaviors = {
   'navigate-home': (_, __, tabId) => {
@@ -13,14 +14,14 @@ const behaviors = {
   'save-pending-to-current-action': (_, [action], tabId) => {
     set(tabId, {...action, pending: true})
   },
-  'return-preimage': ({payment_preimage}, [_, promise]) => {
-    if (promise) promise.resolve(payment_preimage)
+  'return-preimage': ({preimage}, [_, promise]) => {
+    if (promise) promise.resolve(preimage)
   },
-  'notify-payment-success': ({msatoshi, msatoshi_sent}, _) => {
+  'notify-payment-success': ({msatoshi_paid, msatoshi_fees}, _) => {
     notify({
       title: 'Payment succeeded',
-      message: `${msatsFormat(msatoshi)} paid with a fee of ${msatsFormat(
-        msatoshi_sent - msatoshi
+      message: `${msatsFormat(msatoshi_paid)} paid with a fee of ${msatsFormat(
+        msatoshi_fees
       )}.`,
       iconUrl: '/icon64-active.png'
     })
@@ -35,7 +36,7 @@ const behaviors = {
       title: 'Payment error'
     })
   },
-  'paste-invoice': ({bolt11}, [{pasteOn}]) => {
+  'paste-invoice': (bolt11, [{pasteOn}]) => {
     if (pasteOn) {
       browser.tabs.sendMessage(pasteOn[0], {
         paste: true,
@@ -44,14 +45,14 @@ const behaviors = {
       })
     }
   },
-  'save-invoice-to-current-action': ({bolt11}, [action, _], tabId) => {
+  'save-invoice-to-current-action': (bolt11, [action, _], tabId) => {
     set(tabId, {...action, invoice: bolt11})
   },
-  'return-invoice': ({bolt11}, [_, promise]) => {
+  'return-invoice': (bolt11, [_, promise]) => {
     if (promise) promise.resolve(bolt11)
   },
   'wait-for-invoice': ({bolt11}, _, tabId, extra) => {
-    rpcCall('waitinvoice', [extra.newInvoiceLabel])
+    handleRPC({invoiceWait: [extra.newInvoiceLabel]})
       .then(({status, msatoshi, description}) => {
         if (status === 'paid') {
           notify({

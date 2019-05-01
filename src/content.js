@@ -130,8 +130,7 @@ if (document) {
           switch (type) {
             case REQUEST_GETINFO:
               return browser.runtime.sendMessage({
-                rpc: true,
-                method: 'getinfo'
+                rpc: {getInfo: []}
               })
             default:
               return null

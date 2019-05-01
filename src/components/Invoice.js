@@ -45,26 +45,20 @@ export default function Invoice() {
   function makeInvoice(e) {
     e.preventDefault()
 
-    let label = `KwH.${cuid.slug()}`
-
     browser.runtime
       .sendMessage({
         tab,
-        rpc: true,
-        method: 'invoice',
-        params: [satoshis * 1000, label, desc.replace(/&nbsp;/g, '').trim()],
+        rpc: {
+          makeInvoice: [satoshis * 1000, desc.replace(/&nbsp;/g, '').trim()]
+        },
         behaviors: {
           success: [
             'paste-invoice',
             'return-invoice',
-            'wait-for-invoice',
             'cleanup-browser-action',
             'save-invoice-to-current-action'
           ],
           failure: ['notify-invoice-error', 'cleanup-browser-action']
-        },
-        extra: {
-          newInvoiceLabel: label
         }
       })
       .then(({bolt11}) => {

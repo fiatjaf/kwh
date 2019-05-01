@@ -10,60 +10,13 @@ import {msatsFormat} from '../utils'
 export default function Home() {
   let {tab} = useContext(CurrentContext)
 
-  let [invoices, setInvoices] = useState([])
-  let [payments, setPayments] = useState([])
-  let [nodeInfo, setNodeInfo] = useState({})
-  let [balance, setBalance] = useState(0)
+  let [summary, setSummary] = useState({})
   let [blocked, setBlocked] = useState({})
 
   useEffect(() => {
-    browser.runtime
-      .sendMessage({tab, rpc: true, method: 'getinfo'})
-      .then(({blockheight, id, alias, color, address}) => {
-        address =
-          address.length === 0
-            ? null
-            : `${address[0].address}:${address[0].port}`
-        setNodeInfo({blockheight, id, alias, color, address})
-      })
-    browser.runtime
-      .sendMessage({tab, rpc: true, method: 'listfunds'})
-      .then(({channels}) => {
-        let balance = channels.reduce((acc, ch) => acc + ch.channel_sat, 0)
-        setBalance(balance)
-      })
-    browser.runtime
-      .sendMessage({tab, rpc: true, method: 'listinvoices'})
-      .then(resp => {
-        setInvoices(resp.invoices.filter(inv => inv.status === 'paid'))
-      })
-    browser.runtime
-      .sendMessage({tab, rpc: true, method: 'listpayments'})
-      .then(resp => {
-        setPayments(resp.payments.filter(pay => pay.status === 'complete'))
-      })
+    browser.runtime.sendMessage({tab, rpc: {summary: []}}).then(setSummary)
     browser.runtime.sendMessage({tab, getBlocked: true}).then(setBlocked)
   }, [])
-
-  let transactions = invoices
-    .map(({paid_at, expires_at, msatoshi, description = ''}) => ({
-      date: paid_at || expires_at,
-      amount: msatoshi,
-      description
-    }))
-    .slice(-15)
-    .concat(
-      payments
-        .map(({created_at, msatoshi, description, payment_preimage}) => ({
-          date: created_at,
-          amount: -msatoshi,
-          description: description || payment_preimage
-        }))
-        .slice(-15)
-    )
-    .sort((a, b) => a.date - b.date)
-    .slice(-15)
-    .reverse()
 
   function unblock(e) {
     e.preventDefault()
@@ -79,12 +32,12 @@ export default function Home() {
   return (
     <div>
       <h1 className="f6 ma3 tc">Balance</h1>
-      <div className="f5 tc dark-pink b">{balance} satoshis</div>
+      <div className="f5 tc dark-pink b">{summary.balance} satoshi</div>
       <h1 className="f6 ma3 tc">Latest transactions</h1>
       <div className="flex justify-center">
         <table className="f">
           <tbody>
-            {transactions.map((tx, i) => (
+            {summary.transactions.map((tx, i) => (
               <tr key={i} className="bg-light-yellow hover-bg-light-pink">
                 <td className="pa1 f7">{formatDate(tx.date)}</td>
                 <td
@@ -105,17 +58,23 @@ export default function Home() {
         </table>
       </div>
       <h1 className="f6 ma3 tc">Node</h1>
-      <div style={{border: `5px solid #${nodeInfo.color}`}} className="pa1 ma2">
+      <div
+        style={{border: `5px solid #${summary.info.color}`}}
+        className="pa1 ma2"
+      >
         <table>
           <tbody>
-            {['alias', 'id', 'address', 'blockheight'].map(attr => (
-              <tr key={attr}>
-                <td className="lh-title b tr dark-pink">{attr}</td>
-                <td className="wrap code lh-copy measure-narrow">
-                  {nodeInfo[attr]}
-                </td>
-              </tr>
-            ))}
+            {['alias', 'id', 'address', 'blockheight']
+              .map(attr => [attr, summary.info[attr]])
+              .filter(([_, v]) => v)
+              .map(([attr, val]) => (
+                <tr key={attr}>
+                  <td className="lh-title b tr dark-pink">{attr}</td>
+                  <td className="wrap code lh-copy measure-narrow">
+                    {summary.info[attr]}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

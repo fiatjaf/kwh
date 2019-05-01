@@ -9,9 +9,10 @@ import {
   MENUITEM_BLOCK,
   MENUITEM_GENERATE
 } from './constants'
-import {rpcCall, sprint, msatsFormat, notify} from './utils'
+import {sprint, msatsFormat, notify} from './utils'
 import {getBehavior} from './predefined-behaviors'
 import * as current from './current-action'
+import handleRPC from './interfaces'
 
 // logger service
 browser.runtime.onMessage.addListener((message, sender) => {
@@ -76,16 +77,11 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
 
 // do an rpc call on behalf of anyone who wants that -- normally the popup
 browser.runtime.onMessage.addListener(
-  ({rpc, method, params, behaviors = {}, extra = {}, tab}, sender) => {
+  ({rpc, behaviors = {}, extra = {}, tab}, sender) => {
     if (!rpc) return
 
     tab = sender.tab || tab
-    let resPromise = rpcCall(method, params).then(res => {
-      if (res.code) {
-        throw new Error(res.message || res.code)
-      }
-      return res
-    })
+    let resPromise = handleRPC(rpc)
 
     resPromise.then(res => {
       ;(behaviors.success || [])

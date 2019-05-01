@@ -60,6 +60,7 @@ export function getOriginData() {
 }
 
 export const defaultRpcParams = {
+  kind: 'lightningd_spark',
   endpoint: 'http://localhost:9737/rpc',
   username: '',
   password: ''
@@ -83,37 +84,17 @@ export function rpcParamsAreSet() {
   })
 }
 
-export function rpcCall(method, params = []) {
-  return getRpcParams().then(({endpoint, username, password}) => {
-    let accessKey = createHmac('sha256', `${username}:${password}`)
-      .update('access-key')
-      .digest('base64')
-      .replace(/\W+/g, '')
-
-    return fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-Requested-With': 'kwh-extension',
-        'X-Access': accessKey
-      },
-      body: JSON.stringify({method, params})
-    }).then(r => r.json())
-  })
-}
-
 export function msatsFormat(msatoshis) {
   if (Math.abs(msatoshis) < 1000) {
-    return `${msatoshis} msat${msatoshis === 1 || msatoshis === -1 ? '' : 's'}`
+    return `${msatoshis} msat`
   }
 
-  if (msatoshis === 1000) return '1 sat'
+  if (msatoshis === 1000) return '1 satoshi'
 
   for (let prec = 3; prec >= 0; prec--) {
     let dec = 10 ** prec
     if (msatoshis / dec === parseInt(msatoshis / dec)) {
-      return `${(msatoshis / 1000).toFixed(3 - prec)} sats`
+      return `${(msatoshis / 1000).toFixed(3 - prec)} sat`
     }
   }
 }
