@@ -3,7 +3,7 @@
 import * as lightningd_spark from './lightningd_spark'
 import * as eclair from './eclair'
 import * as ptarmigan from './ptarmigan'
-import {getRpcParams, sprint} from '../utils'
+import {getRpcParams, structuredprint} from '../utils'
 
 const kinds = {
   lightningd_spark,
@@ -15,7 +15,7 @@ export function handleRPC(rpcField = {}) {
   return getRpcParams().then(({kind}) => {
     for (let method in rpcField) {
       let args = rpcField[method]
-      console.log(`[rpc][${kind}]: ${method} ${sprint(args)}`)
+      console.log(`[rpc][${kind}]: ${method} ${structuredprint(args)}`)
       return kinds[kind][method].apply(null, args)
     }
   })

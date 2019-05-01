@@ -9,7 +9,7 @@ import {
   MENUITEM_BLOCK,
   MENUITEM_GENERATE
 } from './constants'
-import {sprint, formatmsat, notify, abbreviate} from './utils'
+import {structuredprint, formatmsat, notify, abbreviate} from './utils'
 import {getBehavior} from './predefined-behaviors'
 import {handleRPC, listenForEvents} from './interfaces'
 import * as current from './current-action'
@@ -17,7 +17,7 @@ import * as current from './current-action'
 // logger service
 browser.runtime.onMessage.addListener((message, sender) => {
   console.log(
-    `[message-in]: ${sprint({
+    `[message-in]: ${structuredprint({
       ...message,
       tab: message.getInit ? '-' : (sender.tab || message.tab).id
     })}}`
@@ -77,6 +77,8 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
 
 // start listening for events from the node
 listenForEvents((type, data) => {
+  console.log(`[node-event][${type}]: ${structuredprint(data)}`)
+
   switch (type) {
     case 'payment-received':
       let {amount, description, hash} = data

@@ -101,7 +101,7 @@ export function formatmsat(msatoshis) {
   }
 }
 
-export function sprint(o) {
+export function structuredprint(o) {
   return Object.keys(o)
     .map(
       k => `${k}='${typeof o[k] === 'string' ? o[k] : JSON.stringify(o[k])}'`

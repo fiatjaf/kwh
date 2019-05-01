@@ -16,7 +16,7 @@ import Home from './components/Home'
 import Payment from './components/Payment'
 import Invoice from './components/Invoice'
 import {RPCParams} from './options'
-import {sprint, rpcParamsAreSet} from './utils'
+import {structuredprint, rpcParamsAreSet} from './utils'
 
 export const CurrentContext = React.createContext({action: null, tab: null})
 
@@ -32,7 +32,7 @@ function App() {
   useEffect(() => {
     // when this page is rendered, query the current action
     browser.runtime.sendMessage({getInit: true}).then(({action, tab}) => {
-      console.log(`[action]: ${sprint(action)} tab=${tab.id}`)
+      console.log(`[action]: ${structuredprint(action)} tab=${tab.id}`)
       setAction(action)
       setProxiedTab(tab)
     })

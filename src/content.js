@@ -5,7 +5,7 @@ import browser from 'webextension-polyfill'
 const Keysim = require('keysim')
 
 import {PROMPT_PAYMENT, REQUEST_GETINFO} from './constants'
-import {getOriginData, rpcParamsAreSet, sprint} from './utils'
+import {getOriginData, rpcParamsAreSet, structuredprint} from './utils'
 
 if (document) {
   // intercept any `lightning:` links
@@ -125,7 +125,7 @@ if (document) {
           })
         } else {
           // default: an action or prompt
-          console.log(`[kWh]: ${type} ${sprint(extra)} ${sprint(origin)}`)
+          console.log(`[kWh]: ${type} ${structuredprint(extra)} ${structuredprint(origin)}`)
 
           switch (type) {
             case REQUEST_GETINFO:
