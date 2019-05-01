@@ -3,7 +3,7 @@
 import cuid from 'cuid'
 import createHmac from 'create-hmac'
 
-import {getRpcParams} from '../utils'
+import {getRpcParams, normalizeURL} from '../utils'
 
 const fetch = window.fetch
 const EventSource = window.EventSource
@@ -138,16 +138,6 @@ function rpcCall(method, params = []) {
         return res
       })
   })
-}
-
-function normalizeURL(endpoint) {
-  endpoint = endpoint.trim()
-
-  if (endpoint.slice(-4) === '/rpc') {
-    return endpoint.slice(0, -4)
-  } else {
-    return endpoint
-  }
 }
 
 function makeAccessKey(username, password) {

@@ -4,7 +4,7 @@ import browser from 'webextension-polyfill'
 import React, {useState, useEffect, useContext} from 'react' // eslint-disable-line
 
 import {CurrentContext} from '../popup'
-import {msatsFormat} from '../utils'
+import {msatsFormat, abbreviate} from '../utils'
 
 export default function Payment() {
   let {action, tab} = useContext(CurrentContext)
@@ -152,20 +152,22 @@ export default function Payment() {
           )}{' '}
           to{' '}
           <span className="dark-pink hover-gold code b f6">
-            {invoiceData.nodeid.slice(0, 4)}…{invoiceData.nodeid.slice(-4)}
+            {abbreviate(invoiceData.nodeid)}
           </span>
-          {invoiceData.description ? (
+          {invoiceData.description && (
             <>
               {' '}
-              for{' '}
+              by occasion of{' '}
               <span className="dark-pink hover-gold code b f6">
                 {invoiceData.description}
               </span>
             </>
-          ) : (
-            ''
-          )}
-          ?
+          )}{' '}
+          in exchange for the preimage of{' '}
+          <span className="dark-pink hover-gold code b f6">
+            {abbreviate(invoiceData.hash)}
+          </span>
+          . ?
           <div className="flex justify-end">
             <button
               onClick={sendPayment}

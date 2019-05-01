@@ -1,10 +1,10 @@
 /** @format */
 
-import {getRpcParams} from '../utils'
+import {getRpcParams, normalizeURL} from '../utils'
 
 const fetch = window.fetch
 const WebSocket = window.WebSocket
-const FormData = window.FormData
+const URLSearchParams = window.URLSearchParams
 
 export function summary() {
   return Promise.all([
@@ -16,9 +16,8 @@ export function summary() {
         address: publicAddresses.length === 0 ? null : publicAddresses[0]
       })
     ),
-    rpcCall('listinvoices'),
     rpcCall('listpendinginvoices'),
-    rpcCall('listpayments'),
+    rpcCall('listinvoices'),
     rpcCall('channels').then(
       channels =>
         channels.reduce(
@@ -51,7 +50,11 @@ export function summary() {
   })
 }
 
-export function pay(bolt11, msatoshi = undefined, description = undefined) {
+export function pay(bolt11, msatoshi) {
+  if (!msatoshi) {
+    msatoshi = undefined
+  }
+
   return rpcCall('payinvoice', {invoice: bolt11, amountMsat: msatoshi}).then(
     callId => {
       return new Promise(resolve => {
@@ -67,7 +70,7 @@ export function pay(bolt11, msatoshi = undefined, description = undefined) {
 }
 
 export function decode(bolt11) {
-  return rpcCall('parseinvoice', {}).then(
+  return rpcCall('parseinvoice', {invoice: bolt11}).then(
     ({description, amount, nodeId, paymentHash, expiry, timestamp}) => ({
       description,
       msatoshi: amount,
@@ -93,7 +96,11 @@ var eventCallbacks = {}
 
 export function listenForEvents(defaultCallback) {
   return getRpcParams().then(({endpoint, password}) => {
-    const ws = new WebSocket(endpoint.trim().replace('://', '://:' + password))
+    const ws = new WebSocket(
+      normalizeURL(endpoint)
+        .replace('://', '://:' + password + '@')
+        .replace('http', 'ws') + '/ws'
+    )
 
     ws.onmessage = ev => {
       var event
@@ -113,40 +120,44 @@ export function listenForEvents(defaultCallback) {
       // here we send normalized data, not the raw event
       switch (event.type) {
         case 'payment-received':
-          defaultCallback({})
+          defaultCallback('payment-received', {
+            amount: event.amount,
+            description: event.description,
+            hash: event.paymentHash
+          })
       }
     }
 
     ws.onclose = ev => {
       console.log('websocket closed', ev)
-      listenForEvents(defaultCallback)
+      setTimeout(() => {
+        listenForEvents(defaultCallback)
+      }, 5000)
     }
 
     ws.onerror = ev => {
       console.log('error on websocket', ev)
-      listenForEvents(defaultCallback)
     }
   })
 }
 
 function rpcCall(method, params = {}) {
   return getRpcParams().then(({endpoint, password}) => {
-    let formData = new FormData()
+    let urlparams = new URLSearchParams()
 
     for (let k in params) {
       if (typeof params[k] === 'undefined') continue
-
-      formData.append(k, params[k])
+      urlparams.append(k, params[k])
     }
 
-    return fetch(endpoint.trim() + '/' + method, {
+    return fetch(normalizeURL(endpoint) + '/' + method, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json',
         Authorization: 'Basic ' + window.btoa(':' + password)
       },
-      body: formData
+      body: urlparams.toString()
     })
       .then(r => r.json())
       .then(res => {

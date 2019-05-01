@@ -1,6 +1,6 @@
 /** @format */
 
-import {getRpcParams} from '../utils'
+import {getRpcParams, normalizeURL} from '../utils'
 
 const fetch = window.fetch
 
@@ -11,11 +11,13 @@ export function summary() {
       pmts.filter(pmt => pmt.state === 'succeeded').slice(-15)
     )
   ])
-    .then(([info, payments]) => [
-      info,
-      payments,
-      Promise.all(payments.map(pmt => pmt.invoice).map(decode))
-    ])
+    .then(([info, payments]) =>
+      Promise.all([
+        info,
+        payments,
+        Promise.all(payments.map(pmt => pmt.invoice).map(decode))
+      ])
+    )
     .then(([{node_id, total_local_msat}, payments, decodedpayments]) => ({
       info: {
         id: node_id
@@ -67,7 +69,7 @@ export function listenForEvents() {
 
 function rpcCall(method, params = {}) {
   return getRpcParams().then(({endpoint, username, password}) => {
-    return fetch(endpoint.trim() + '/' + method, {
+    return fetch(normalizeURL(endpoint) + '/' + method, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

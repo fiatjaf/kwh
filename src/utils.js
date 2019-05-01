@@ -58,13 +58,18 @@ export function getOriginData() {
 
 export const defaultRpcParams = {
   kind: 'lightningd_spark',
-  endpoint: 'http://localhost:9737/rpc',
+  endpoint: 'http://localhost:9737/',
   username: '',
   password: ''
 }
 
 export function getRpcParams() {
   return browser.storage.local.get(defaultRpcParams)
+}
+
+export function normalizeURL(endpoint) {
+  let url = new URL(endpoint.trim(), 'http://localhost:9737/')
+  return url.protocol + '//' + url.host
 }
 
 export function rpcParamsAreSet() {
@@ -102,6 +107,10 @@ export function sprint(o) {
       k => `${k}='${typeof o[k] === 'string' ? o[k] : JSON.stringify(o[k])}'`
     )
     .join(' ')
+}
+
+export function abbreviate(longstring) {
+  return `${longstring.slice(0, 4)}…${longstring.slice(-4)}`
 }
 
 export function notify(params, notificationId = null) {

@@ -12,6 +12,52 @@ export function RPCParams() {
   let [initialValues, setInitialValues] = useState(defaultRpcParams)
   let [saved, setSaved] = useState(false)
 
+  const defs = [
+    {
+      label: 'lightningd',
+      value: 'lightningd_spark',
+      title: 'Spark RPC Server',
+      subtitle: (
+        <>
+          Set up a <a href="https://github.com/shesek/spark-wallet">Spark</a>{' '}
+          <a href="https://github.com/fiatjaf/sparko">RPC endpoint</a> server
+          tied to your c-lightning node.
+        </>
+      ),
+      fields: ['endpoint', 'username', 'password']
+    },
+    {
+      label: 'Eclair',
+      value: 'eclair',
+      title: 'Eclair HTTP API',
+      subtitle: (
+        <>
+          Use Eclair >=0.3 and{' '}
+          <a href="https://github.com/ACINQ/eclair#configuring-eclair">
+            enable the API in the configuration
+          </a>{' '}
+          so kWh can talk to it.
+        </>
+      ),
+      fields: ['endpoint', 'password']
+    },
+    {
+      label: 'Ptarmigan',
+      value: 'ptarmigan',
+      title: 'Ptarmigan REST API',
+      subtitle: (
+        <>
+          Start the{' '}
+          <a href="https://github.com/nayutaco/ptarmigan/blob/master/docs/howtouse_rest_api.md">
+            REST API application
+          </a>{' '}
+          for your Ptarmigan node and paste the URL here.
+        </>
+      ),
+      fields: ['endpoint']
+    }
+  ]
+
   useEffect(() => {
     getRpcParams().then(values => {
       setOptions(values)
@@ -40,27 +86,48 @@ export function RPCParams() {
     saveOptions(newValues)
   }
 
+  var currentInterface
+  for (let i = 0; i < defs.length; i++) {
+    if (defs[i].value === options.kind) {
+      currentInterface = defs[i]
+      break
+    }
+  }
+
   return (
     <div className="flex flex-column items-center pa2 lh-copy f5 black-70">
+      <div className="flex">
+        {defs.map(({label: labelName, value}) => (
+          <label className="flex flex-column items-center mh3" key={labelName}>
+            {labelName}{' '}
+            <input
+              type="checkbox"
+              name="kind"
+              value={value}
+              onChange={handleChange}
+              checked={currentInterface.value === value}
+            />
+          </label>
+        ))}
+      </div>
+
       <header className="measure-narrow tc">
-        <h1 className="f6 ma3 tc">Spark server credentials</h1>
-        <p className="f7 ma0 mb2 dark-pink">
-          kWh uses the{' '}
-          <a href="https://github.com/shesek/spark-wallet">Spark Wallet</a> RPC
-          endpoint to communicate with your lightningd node.
-        </p>
+        <h1 className="f6 ma3 tc">{currentInterface.title}</h1>
+        <p className="f7 ma0 mb2 dark-pink">{currentInterface.subtitle}</p>
       </header>
       <div>
-        {[
-          ['Spark URL', 'endpoint', 'text'],
-          ['Spark username', 'username', 'text'],
-          ['Spark password', 'password', 'password']
-        ].map(([label, attr, type]) => (
+        {currentInterface.fields.map(attr => (
           <div className="ma1 pa1" key={attr}>
             <label className="flex align-center items-center justify-between">
-              <span className="w4 pa1 tr">{label}: </span>
+              <span className="pa1 tr">{attr}: </span>
               <input
-                type={options[attr] !== initialValues[attr] ? 'text' : type}
+                type={
+                  options[attr] !== initialValues[attr]
+                    ? 'text'
+                    : attr === 'password'
+                      ? 'password'
+                      : 'text'
+                }
                 className="input-reset bn pa1 flex-auto black-70 bg-light-yellow"
                 value={options[attr]}
                 name={attr}
