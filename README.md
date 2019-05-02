@@ -2,7 +2,7 @@
   <img src="https://i.imgur.com/Opk21LD.png" alt="kWh" style="max-width:100%;" width="400">
 </p>
 
-<p align="center">The companion browser extension for c-lightning nodes.</p>
+<p align="center">The companion browser extension for c-lightning, Eclair and Ptarmigan nodes.</p>
 
 <p align="center">
   <a href="https://addons.mozilla.org/firefox/addon/kwh/"><img src="https://i.imgur.com/aNCB2LG.png" alt="Install for Firefox" width="215" style="max-width:100%;"></a>
@@ -15,9 +15,9 @@
 - [`webln`](https://webln.dev/#/) support;
 - Pay highlighted invoice with a context menu click;
 - Handle `lightning:` links;
-- [“Generate invoice here”](https://youtu.be/wzkxxz5FsJo) context menu;
+- ["Generate invoice here"](https://youtu.be/wzkxxz5FsJo) context menu;
 - Manual payments and invoice creation;
-- No popups, all interactions happen in the browserAction.
+- No window popups, all interactions happen in the `browserAction` popup.
 
 <p align="center">
   <img src="screenshots/withdraw-checkmark-tippin.gif" width="400" />
@@ -25,11 +25,15 @@
 
 ### Requirements
 
-A [lightningd](https://github.com/ElementsProject/lightning/) with a [Spark](https://github.com/shesek/spark-wallet) [RPC server](https://github.com/fiatjaf/sparko) in front of it.
+Either
+
+  * a [lightningd](https://github.com/ElementsProject/lightning/) node with a [Spark](https://github.com/shesek/spark-wallet) [RPC server](https://github.com/fiatjaf/sparko) in front of it;
+  * an [Eclair](https://github.com/ACINQ/eclair) node with the [API](https://github.com/ACINQ/eclair#configuring-eclair) enabled and accessible;
+  * a [Ptarmigan](https://github.com/nayutaco/ptarmigan) node with the [REST API Node.js app](https://github.com/nayutaco/ptarmigan/blob/master/docs/howtouse_rest_api.md) running.
 
 ### Build instructions
 
-You'll need: Node.js>=10, npm>=6, GNU Make>=4
+You'll need: Node.js>=10, npm, Make
 
 ```
 npm install
