@@ -8,6 +8,10 @@ import {getRpcParams, normalizeURL} from '../utils'
 const fetch = window.fetch
 const EventSource = window.EventSource
 
+export function getInfo() {
+  return rpcCall('getinfo').then(({id, alias, color}) => ({id, alias, color}))
+}
+
 export function summary() {
   return Promise.all([
     rpcCall('getinfo').then(({blockheight, id, alias, color, address}) => {
