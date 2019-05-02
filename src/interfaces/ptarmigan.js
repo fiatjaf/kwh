@@ -4,6 +4,10 @@ import {getRpcParams, normalizeURL} from '../utils'
 
 const fetch = window.fetch
 
+export function getInfo() {
+  return rpcCall('getinfo').then(info => ({id: info.node_id}))
+}
+
 export function summary() {
   return Promise.all([
     rpcCall('getinfo'),

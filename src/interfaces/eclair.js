@@ -6,6 +6,10 @@ const fetch = window.fetch
 const WebSocket = window.WebSocket
 const URLSearchParams = window.URLSearchParams
 
+export function getInfo() {
+  return rpcCall('getinfo').then(({nodeId, alias}) => ({id: nodeId, alias}))
+}
+
 export function summary() {
   return Promise.all([
     rpcCall('getinfo').then(
