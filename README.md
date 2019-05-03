@@ -17,6 +17,7 @@
 - Handle `lightning:` links;
 - ["Generate invoice here"](https://youtu.be/wzkxxz5FsJo) context menu;
 - Manual payments and invoice creation;
+- Instant notifications on received payments;
 - No window popups, all interactions happen in the `browserAction` popup.
 
 <p align="center">
