@@ -121,3 +121,30 @@ export function notify(params, notificationId = null) {
     browser.notifications.clear(notificationId)
   }, 3000)
 }
+
+export function backoff(fn, nattempts = 10, multiplier = 1) {
+  // fibonacci because why not?
+  var currv = 1
+  var prevv = 1
+
+  var res = Promise.reject()
+
+  for (let attempt = 0; attempt < nattempts; attempt++) {
+    let newv = prevv + currv
+    prevv = currv
+    currv = newv
+    ;((attempt, wait) => {
+      res = res.catch(() => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            fn(attempt, wait)
+              .then(resolve)
+              .catch(reject)
+          }, wait * 1000)
+        })
+      })
+    })(attempt, currv * multiplier)
+  }
+
+  return res
+}
