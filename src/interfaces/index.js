@@ -23,6 +23,8 @@ export function handleRPC(rpcField = {}) {
 
 export function listenForEvents(callback) {
   return getRpcParams().then(({kind}) => {
+    console.log(`[listening][${kind}]`)
+    kinds[kind].eventsCleanup()
     kinds[kind].listenForEvents(callback)
   })
 }

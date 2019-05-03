@@ -108,9 +108,9 @@ export function makeInvoice(msatoshi, description) {
   )
 }
 
-export function listenForEvents() {
-  /* not yet supported by ptarmigan rest api */
-}
+// not yet supported on ptarmigan
+export function eventsCleanup() {}
+export function listenForEvents() {}
 
 function rpcCall(method, params = {}) {
   return getRpcParams().then(({endpoint, username, password}) => {

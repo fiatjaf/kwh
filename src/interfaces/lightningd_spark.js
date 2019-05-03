@@ -96,9 +96,17 @@ export function makeInvoice(msatoshi = 'any', description, label = undefined) {
   )
 }
 
+var es
+
+export function eventsCleanup() {
+  if (es && es.readyState === EventSource.OPEN) es.close()
+}
+
 export function listenForEvents(defaultCallback) {
+  eventsCleanup()
+
   return getRpcParams().then(({endpoint, username, password}) => {
-    const es = new EventSource(
+    es = new EventSource(
       normalizeURL(endpoint) +
         '/stream?access-key=' +
         makeAccessKey(username, password)

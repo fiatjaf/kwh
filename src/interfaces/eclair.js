@@ -109,14 +109,27 @@ export function makeInvoice(msatoshi, description) {
 }
 
 var eventCallbacks = {}
+var errcount = 0
+var ws
+
+export function eventsCleanup() {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.close()
+  errcount = 0
+}
 
 export function listenForEvents(defaultCallback) {
+  eventsCleanup()
+
   return getRpcParams().then(({endpoint, password}) => {
-    const ws = new WebSocket(
+    ws = new WebSocket(
       normalizeURL(endpoint)
         .replace('://', '://:' + password + '@')
         .replace('http', 'ws') + '/ws'
     )
+
+    ws.onopen = () => {
+      errcount = 0
+    }
 
     ws.onmessage = ev => {
       var event
@@ -138,21 +151,18 @@ export function listenForEvents(defaultCallback) {
         case 'payment-received':
           defaultCallback('payment-received', {
             amount: event.amount,
-            description: event.description,
+            description: event.description || '',
             hash: event.paymentHash
           })
       }
     }
 
-    ws.onclose = ev => {
-      console.log('websocket closed', ev)
-      setTimeout(() => {
-        listenForEvents(defaultCallback)
-      }, 5000)
-    }
-
     ws.onerror = ev => {
       console.log('error on websocket', ev)
+      errcount++
+      setTimeout(() => {
+        listenForEvents(defaultCallback)
+      }, (errcount + 1) * 1000)
     }
   })
 }

@@ -1,6 +1,7 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
+import debounce from 'debounce-with-args'
 
 import {
   PROMPT_PAYMENT,
@@ -75,28 +76,40 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
   return promise
 })
 
-// start listening for events from the node
-listenForEvents((type, data) => {
-  console.log(`[node-event][${type}]: ${structuredprint(data)}`)
+// listen events from the node
+const startListening = debounce(
+  function() {
+    listenForEvents((type, data) => {
+      console.log(`[node-event] ${type}: ${structuredprint(data)}`)
 
-  switch (type) {
-    case 'payment-received':
-      let {amount, description, hash} = data
-      notify({
-        title: 'Got payment',
-        message: `Your ${formatmsat(amount)} invoice (${
-          description ? `"${description}"` : abbreviate(hash)
-        }) was paid!`,
-        iconUrl: '/icon64-active.png'
-      })
-      browser.runtime.sendMessage({
-        invoicePaid: true,
-        hash
-      })
-      break
-    case 'payment-failed':
-      break
-  }
+      switch (type) {
+        case 'payment-received':
+          let {amount, description, hash} = data
+          notify({
+            title: 'Got payment',
+            message: `Your ${formatmsat(amount)} invoice (${
+              description ? `"${description}"` : abbreviate(hash)
+            }) was paid!`,
+            iconUrl: '/icon64-active.png'
+          })
+          browser.runtime.sendMessage({
+            invoicePaid: true,
+            hash
+          })
+          break
+        case 'payment-failed':
+          break
+      }
+    })
+  },
+  10000,
+  () => '~'
+)
+startListening() // start listening when we start + 10s
+browser.storage.onChanged.addListener((changes, area) => {
+  // restart whenever options change (debounced)
+  if (area !== 'local') return
+  startListening()
 })
 
 // do an rpc call on behalf of anyone who wants that -- normally the popup
