@@ -1,6 +1,6 @@
 /** @format */
 
-import {getRpcParams, normalizeURL} from '../utils'
+import {getRpcParams, backoff, normalizeURL} from '../utils'
 
 const fetch = window.fetch
 const WebSocket = window.WebSocket
@@ -109,61 +109,86 @@ export function makeInvoice(msatoshi, description) {
 }
 
 var eventCallbacks = {}
-var errcount = 0
-var ws
+var currentWS
 
-export function eventsCleanup() {
-  if (ws && ws.readyState === WebSocket.OPEN) ws.close()
-  errcount = 0
+export function cleanupListener() {
+  if (currentWS && currentWS.readyState === WebSocket.OPEN) currentWS.close()
 }
 
 export function listenForEvents(defaultCallback) {
-  eventsCleanup()
+  return backoff(() => {
+    var isFulfilled = false
 
-  return getRpcParams().then(({endpoint, password}) => {
-    ws = new WebSocket(
-      normalizeURL(endpoint)
-        .replace('://', '://:' + password + '@')
-        .replace('http', 'ws') + '/ws'
+    return getRpcParams().then(
+      ({kind, endpoint, password}) => {
+        if (kind !== 'eclair') return null
+
+        return new Promise((resolve, reject) => {
+          const ws = new WebSocket(
+            normalizeURL(endpoint)
+              .replace('://', '://:' + password + '@')
+              .replace('http', 'ws') + '/ws'
+          )
+
+          ws.onopen = () => {
+            // if it's open for 2 seconds consider it a success
+            setTimeout(() => {
+              resolve(ws)
+            }, 2000)
+          }
+
+          ws.onmessage = ev => {
+            var event
+            try {
+              event = JSON.parse(ev.data)
+            } catch (e) {
+              console.log('failed to parse websocket event', ev)
+              return
+            }
+
+            // specific callbacks registered for this event
+            if (eventCallbacks[event.id]) {
+              eventCallbacks[event.id](event)
+              delete eventCallbacks[event.id]
+            }
+
+            // here we send normalized data, not the raw event
+            switch (event.type) {
+              case 'payment-received':
+                defaultCallback('payment-received', {
+                  amount: event.amount,
+                  description: event.description || '',
+                  hash: event.paymentHash
+                })
+            }
+          }
+
+          ws.onerror = ev => {
+            console.log('error on websocket', ev)
+
+            if (!isFulfilled) {
+              // fail and let backoff retry
+              reject()
+            } else {
+              // otherwise we trigger an internal retry
+              listenForEvents(defaultCallback)
+              // if it succeeds this will just replace
+              // currentWS so cleanupListener will always work.
+            }
+          }
+        }).then(ws => {
+          if (ws) {
+            cleanupListener() // clear current if there's one
+            currentWS = ws // assign new
+            return true
+          }
+
+          return false
+        })
+      },
+      10,
+      10
     )
-
-    ws.onopen = () => {
-      errcount = 0
-    }
-
-    ws.onmessage = ev => {
-      var event
-      try {
-        event = JSON.parse(ev.data)
-      } catch (e) {
-        console.log('failed to parse websocket event', ev)
-        return
-      }
-
-      // specific callbacks registered for this event
-      if (eventCallbacks[event.id]) {
-        eventCallbacks[event.id](event)
-        delete eventCallbacks[event.id]
-      }
-
-      // here we send normalized data, not the raw event
-      switch (event.type) {
-        case 'payment-received':
-          defaultCallback('payment-received', {
-            amount: event.amount,
-            description: event.description || '',
-            hash: event.paymentHash
-          })
-      }
-    }
-
-    ws.onerror = ev => {
-      console.log('error on websocket', ev)
-      errcount++
-      setTimeout(() => {
-        listenForEvents(defaultCallback)
-      }, (errcount + 1) * 1000)
-    }
   })
 }
 

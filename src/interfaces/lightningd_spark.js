@@ -3,7 +3,7 @@
 import cuid from 'cuid'
 import createHmac from 'create-hmac'
 
-import {getRpcParams, normalizeURL} from '../utils'
+import {getRpcParams, backoff, normalizeURL} from '../utils'
 
 const fetch = window.fetch
 const EventSource = window.EventSource
@@ -97,43 +97,78 @@ export function makeInvoice(msatoshi = 'any', description, label = undefined) {
 }
 
 var es
+var currentES
 
-export function eventsCleanup() {
-  if (es && es.readyState === EventSource.OPEN) es.close()
+export function cleanupListener() {
+  if (currentES && currentES.readyState === EventSource.OPEN) currentES.close()
 }
 
-export function listenForEvents(defaultCallback) {
-  eventsCleanup()
+export function listenForEvents(defaultCallback, errcount = 0) {
+  return backoff(() => {
+    var isFulfilled = false
 
-  return getRpcParams().then(({endpoint, username, password}) => {
-    es = new EventSource(
-      normalizeURL(endpoint) +
-        '/stream?access-key=' +
-        makeAccessKey(username, password)
-    )
-    es.addEventListener('inv-paid', ev => {
-      try {
-        let {description, msatoshi_received, payment_hash} = JSON.parse(ev.data)
+    return getRpcParams().then(
+      ({kind, endpoint, username, password}) => {
+        if (kind !== 'lightningd_spark') return null
 
-        // here we send normalized data, not the raw event
-        defaultCallback('payment-received', {
-          amount: msatoshi_received,
-          description,
-          hash: payment_hash
+        return new Promise((resolve, reject) => {
+          const es = new EventSource(
+            normalizeURL(endpoint) +
+              '/stream?access-key=' +
+              makeAccessKey(username, password)
+          )
+
+          es.onopen = () => {
+            // if it's open for 2 seconds consider it a success
+            setTimeout(() => {
+              resolve(es)
+            }, 2000)
+          }
+
+          es.addEventListener('inv-paid', ev => {
+            try {
+              let {description, msatoshi_received, payment_hash} = JSON.parse(
+                ev.data
+              )
+
+              // here we send normalized data, not the raw event
+              defaultCallback('payment-received', {
+                amount: msatoshi_received,
+                description,
+                hash: payment_hash
+              })
+            } catch (e) {
+              console.log('failed to parse inv-paid event', ev)
+              return
+            }
+          })
+
+          es.onerror = ev => {
+            console.log('error on eventsource', ev)
+
+            if (!isFulfilled) {
+              // fail and let backoff retry
+              reject()
+            } else {
+              // otherwise we trigger an internal retry
+              listenForEvents(defaultCallback)
+              // if it succeeds this will just replace
+              // currentES so cleanupListener will always work.
+            }
+          }
+        }).then(ws => {
+          if (ws) {
+            cleanupListener() // clear current if there's one
+            currentES = es // assign new
+            return true
+          }
+
+          return false
         })
-      } catch (e) {
-        console.log('failed to parse inv-paid event', ev)
-        return
-      }
-    })
-
-    es.onerror = err => {
-      console.log('error on eventsource', err)
-    }
-
-    es.onclose = ev => {
-      console.log('eventsource closed', ev)
-    }
+      },
+      10,
+      10
+    )
   })
 }
 

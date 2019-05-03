@@ -109,7 +109,7 @@ export function makeInvoice(msatoshi, description) {
 }
 
 // not yet supported on ptarmigan
-export function eventsCleanup() {}
+export function cleanupListener() {}
 export function listenForEvents() {}
 
 function rpcCall(method, params = {}) {

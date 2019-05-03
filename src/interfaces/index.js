@@ -21,10 +21,21 @@ export function handleRPC(rpcField = {}) {
   })
 }
 
+var currentListener
+
 export function listenForEvents(callback) {
   return getRpcParams().then(({kind}) => {
+    if (currentListener) {
+      console.log(`[stop-listening][${currentListener}]`)
+      kinds[currentListener].cleanupListener()
+    }
+
     console.log(`[listening][${kind}]`)
-    kinds[kind].eventsCleanup()
-    kinds[kind].listenForEvents(callback)
+    let startListening = kinds[kind].listenForEvents(callback)
+    Promise.all([startListening, kind]).then(([ok, kind]) => {
+      if (ok) {
+        currentListener = kind
+      }
+    })
   })
 }
