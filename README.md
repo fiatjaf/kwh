@@ -32,6 +32,8 @@ Either
   * an [Eclair](https://github.com/ACINQ/eclair) node with the [API](https://github.com/ACINQ/eclair#configuring-eclair) enabled and accessible;
   * a [Ptarmigan](https://github.com/nayutaco/ptarmigan) node with the [REST API Node.js app](https://github.com/nayutaco/ptarmigan/blob/master/docs/howtouse_rest_api.md) running.
 
+If you are using **Google Chrome**, consider enabling the `Experimental Extension APIs` flag on chrome://flags for a better experience. Read more in [this issue](https://github.com/fiatjaf/kwh/issues/4#issuecomment-485288552).
+
 ### Build instructions
 
 You'll need: Node.js>=10, npm, Make
