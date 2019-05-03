@@ -54,7 +54,7 @@ browser.runtime.onMessage.addListener(({setAction, tab}, sender) => {
       let [title, message] = {
         [PROMPT_PAYMENT]: [
           'Send a payment',
-          `'${action.origin.name}' is requesting a payment!`
+          `${action.origin.name || 'an unnamed page'} is requesting a payment!`
         ],
         [PROMPT_INVOICE]: [
           'Make an invoice',
