@@ -35,13 +35,7 @@ export default function Invoice() {
       function handleMessage(message) {
         if (message.invoicePaid && message.hash === invoiceData.hash) {
           setInvoicePaid(true)
-          setTimeout(() => {
-            browser.runtime.sendMessage({
-              tab,
-              triggerBehaviors: true,
-              behaviors: ['navigate-home']
-            })
-          }, 4900)
+          return Promise.resolve(tab)
         }
       }
     },

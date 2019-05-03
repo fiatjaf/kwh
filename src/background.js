@@ -92,10 +92,20 @@ const startListening = debounce(
             }) was paid!`,
             iconUrl: '/icon64-active.png'
           })
-          browser.runtime.sendMessage({
-            invoicePaid: true,
-            hash
-          })
+
+          // if there's a page showing this invoice it will trigger
+          // the checkmark. otherwise nothing will happen.
+          browser.runtime
+            .sendMessage({
+              invoicePaid: true,
+              hash
+            })
+            .then(tab => {
+              // we get back the tab id so we can navigate-home
+              getBehavior('navigate-home')(null, null, tab.id)
+            })
+          break
+        case 'payment-succeeded':
           break
         case 'payment-failed':
           break
