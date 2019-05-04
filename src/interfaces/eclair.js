@@ -1,6 +1,7 @@
 /** @format */
 
 import {getRpcParams, backoff, normalizeURL} from '../utils'
+import {INVOICE_EXPIRY_SECONDS} from '../constants'
 
 const fetch = window.fetch
 const WebSocket = window.WebSocket
@@ -101,7 +102,8 @@ export function decode(bolt11) {
 export function makeInvoice(msatoshi, description) {
   return rpcCall('createinvoice', {
     amountMsat: msatoshi,
-    description
+    description,
+    expireIn: INVOICE_EXPIRY_SECONDS
   }).then(({serialized, paymentHash}) => ({
     bolt11: serialized,
     hash: paymentHash

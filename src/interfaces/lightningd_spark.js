@@ -4,6 +4,7 @@ import cuid from 'cuid'
 import createHmac from 'create-hmac'
 
 import {getRpcParams, backoff, normalizeURL} from '../utils'
+import {INVOICE_EXPIRY_SECONDS} from '../constants'
 
 const fetch = window.fetch
 const EventSource = window.EventSource
@@ -91,9 +92,12 @@ export function decode(bolt11) {
 
 export function makeInvoice(msatoshi = 'any', description, label = undefined) {
   if (!label) label = `kWh.${cuid.slug()}`
-  return rpcCall('invoice', {msatoshi, label, description}).then(
-    ({bolt11, payment_hash}) => ({bolt11, hash: payment_hash})
-  )
+  return rpcCall('invoice', {
+    msatoshi,
+    label,
+    description,
+    expiry: INVOICE_EXPIRY_SECONDS
+  }).then(({bolt11, payment_hash}) => ({bolt11, hash: payment_hash}))
 }
 
 var es

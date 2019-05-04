@@ -11,3 +11,5 @@ export const REQUEST_GETINFO = 'REQUEST_GETINFO'
 export const MENUITEM_GENERATE = 'generate-invoice-here'
 export const MENUITEM_PAY = 'pay-invoice'
 export const MENUITEM_BLOCK = 'block-domain'
+
+export const INVOICE_EXPIRY_SECONDS = 60 * 60 * 24
