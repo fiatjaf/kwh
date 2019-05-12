@@ -1,6 +1,7 @@
 /** @format */
 
 import browser from 'webextension-polyfill'
+import {defs as kindDefs} from './interfaces'
 
 export function getOriginData() {
   return {
@@ -74,15 +75,24 @@ export function normalizeURL(endpoint) {
 
 export function rpcParamsAreSet() {
   return browser.storage.local.get(defaultRpcParams).then(rpcParams => {
-    if (
-      rpcParams.username !== '' &&
-      rpcParams.password !== '' &&
-      rpcParams.endpoint !== ''
-    ) {
-      return true
+    var currentKindDef = null
+
+    for (let i = 0; i < kindDefs.length; i++) {
+      if (kindDefs[i].value === rpcParams.kind) {
+        currentKindDef = kindDefs[i]
+      }
     }
 
-    return false
+    // check if for the current kind (eclair, lightningd_spark etc.)
+    // all the required options are set.
+    for (let i = 0; i < currentKindDef.fields.length; i++) {
+      let field = currentKindDef.fields[i]
+      if (!rpcParams[field] || rpcParams[field] === '') {
+        return false
+      }
+    }
+
+    return true
   })
 }
 

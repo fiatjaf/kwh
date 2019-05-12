@@ -9,7 +9,7 @@
   "manifest_version": 2,
   "name": "kWh",
   "description": "Send and receive Lightning payments in the browser with c-lightning, Eclair or Ptarmigan.",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "author": "fiatjaf",
   "icons": {
     "16": "icon16.png",

@@ -26,7 +26,9 @@ function App() {
   let [missingRpcParams, setMissingRpcParams] = useState(null)
 
   useEffect(() => {
-    rpcParamsAreSet().then(ok => setMissingRpcParams(!ok))
+    rpcParamsAreSet().then(ok => {
+      setMissingRpcParams(!ok)
+    })
   }, [])
 
   useEffect(() => {
