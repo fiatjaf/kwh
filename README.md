@@ -24,7 +24,7 @@
   <img src="screenshots/withdraw-checkmark-tippin.gif" width="400" />
 </p>
 
-### Requirements
+## Requirements
 
 Either
 
@@ -32,9 +32,12 @@ Either
   * an [Eclair](https://github.com/ACINQ/eclair) node with the [API](https://github.com/ACINQ/eclair#configuring-eclair) enabled and accessible;
   * a [Ptarmigan](https://github.com/nayutaco/ptarmigan) node with the [REST API Node.js app](https://github.com/nayutaco/ptarmigan/blob/master/docs/howtouse_rest_api.md) running.
 
-If you are using **Google Chrome**, consider enabling the `Experimental Extension APIs` flag on chrome://flags for a better experience. Read more in [this issue](https://github.com/fiatjaf/kwh/issues/4#issuecomment-485288552).
+### Caveats
 
-### Build instructions
+  * If you are using **Google Chrome**, consider enabling the `Experimental Extension APIs` flag on chrome://flags for a better experience. Read more in [this issue](https://github.com/fiatjaf/kwh/issues/4#issuecomment-485288552).
+  * If you are using Eclair, [the WebSocket won't connect on Firefox](https://github.com/ACINQ/eclair/issues/1001), so you won't get notifications when a payment is sent or received, the experience will not be as nice as if it did.
+
+## Build instructions
 
 You'll need: Node.js>=10, npm, Make
 
