@@ -85,17 +85,19 @@ function App() {
       break
   }
 
-  let navItemClasses = 'link dim f6 dib pointer ma2 pa2 bg-animate'
-  let activeNavItemClasses = ' b green bg-light-yellow'
+  let navItemClasses = 'navItemClass'
+  let activeNavItemClasses = 'activeNavItemClass'
 
   return (
-    <main className="bg-washed-green pb4 pr1 pl1 black-70 sans-serif">
+    <main className="">
       {missingRpcParams ? (
         <RPCParams />
       ) : (
         <>
           {' '}
-          <nav className="pa1 flex justify-between">
+          <header className="mainHeader">
+          </header>
+          <nav className="navBar">
             <a
               className={
                 navItemClasses +

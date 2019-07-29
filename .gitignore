@@ -3,7 +3,6 @@ node_modules
 *.swp
 static/icon*
 static/*.js
-static/*.css
 browserify-cache.json
 *.zip
 tmpsrc

@@ -31,9 +31,9 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className="f6 ma3 tc">Balance</h1>
+      <h1 className="headlineH1">Balance</h1>
       <div className="f5 tc dark-pink b">{summary.balance || '~'} satoshi</div>
-      <h1 className="f6 ma3 tc">Latest transactions</h1>
+      <h1 className="headlineH1">Latest transactions</h1>
       <div className="flex justify-center">
         <table className="f">
           <tbody>
@@ -62,10 +62,10 @@ export default function Home() {
           </tbody>
         </table>
       </div>
-      <h1 className="f6 ma3 tc">Node</h1>
+      <h1 className="headlineH1">Node</h1>
       <div
         style={{border: `5px solid #${summary.info.color || 'ffffff'}`}}
-        className="pa1 ma2"
+        className="infoNode"
       >
         <table>
           <tbody>
@@ -85,7 +85,7 @@ export default function Home() {
       </div>
       {Object.keys(blocked).length > 0 && (
         <>
-          <h1 className="f6 ma3 tc">Blacklist</h1>
+          <h1 className="headlineH1">Blacklist</h1>
           <div>
             <table>
               <tbody>

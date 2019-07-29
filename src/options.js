@@ -13,12 +13,14 @@ export function RPCParams() {
   let [initialValues, setInitialValues] = useState(defaultRpcParams)
   let [saved, setSaved] = useState(false)
 
+
   useEffect(() => {
     getRpcParams().then(values => {
       setOptions(values)
       setInitialValues(values)
     })
   }, [])
+
 
   const saveOptions = debounce(
     function(newValues) {
@@ -33,6 +35,7 @@ export function RPCParams() {
     () => 'options'
   )
 
+
   function handleChange(e) {
     let k = e.target.name
     let v = e.target.value.trim()
@@ -40,6 +43,7 @@ export function RPCParams() {
     setOptions(newValues)
     saveOptions(newValues)
   }
+
 
   var currentInterface
   for (let i = 0; i < defs.length; i++) {
@@ -49,11 +53,12 @@ export function RPCParams() {
     }
   }
 
+
   return (
-    <div className="flex flex-column items-center pa2 lh-copy f5 black-70">
-      <div className="flex">
+    <div className="optionsMain">
+      <div className="optionsNav">
         {defs.map(({label: labelName, value}) => (
-          <label className="flex flex-column items-center mh3" key={labelName}>
+          <label className="navLabel" key={labelName}>
             {labelName}{' '}
             <input
               type="checkbox"
@@ -61,6 +66,7 @@ export function RPCParams() {
               value={value}
               onChange={handleChange}
               checked={currentInterface.value === value}
+              className="inputCheckbox"
             />
           </label>
         ))}
@@ -91,7 +97,7 @@ export function RPCParams() {
             </label>
           </div>
         ))}
-        <div className={'pa2 di fr hide dark-pink ' + (saved ? 'show' : '')}>
+        <div className={'savedCaption' + (saved ? 'show' : '')}>
           saved!
         </div>
       </div>
